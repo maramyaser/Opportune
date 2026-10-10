@@ -5,6 +5,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from .views import OpportunityViewSet
 from .auth_views import RegisterView, LoginView
+from .views import OpportunityExtractView
 
 router = DefaultRouter()
 router.register(
@@ -20,6 +21,11 @@ urlpatterns = [
         "auth/token/refresh/",
         TokenRefreshView.as_view(),
         name="token_refresh",
+    ),
+    path(
+        "opportunities/extract/",
+         OpportunityExtractView.as_view(),
+         name="opportunity-extract",
     ),
 ] + router.urls
 
