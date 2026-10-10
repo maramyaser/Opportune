@@ -1,0 +1,195 @@
+
+/* Authentication screen — matches Opportune's original cartoon palette */
+.auth-page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  position: relative;
+  overflow: hidden;
+  padding: 32px 18px;
+  background: #fffaf0;
+  color: #245d5d;
+  font-family: 'Nunito', sans-serif;
+}
+.auth-decoration {
+  position: absolute;
+  color: #ff8c52;
+  font-size: 76px;
+  line-height: 1;
+  font-weight: 900;
+  pointer-events: none;
+}
+.auth-decoration-one { top: 8%; left: 12%; transform: rotate(-12deg); }
+.auth-decoration-two { right: 12%; bottom: 9%; color: #359fa0; transform: rotate(15deg); }
+.auth-card {
+  width: min(440px, 100%);
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  padding: 34px;
+  border: 2px solid #245d5d;
+  border-radius: 28px;
+  background: #fffdf7;
+  box-shadow: 9px 9px 0 #8ad6d1;
+}
+.auth-brand-mark {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  color: #245d5d;
+  background: #8ad6d1;
+  border: 2px solid #245d5d;
+  border-radius: 19px;
+  box-shadow: 3px 3px 0 #245d5d;
+}
+.auth-brand-mark span {
+  position: absolute;
+  top: -10px;
+  right: -8px;
+  color: #ff8c52;
+  font-size: 21px;
+}
+.auth-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 25px 0 9px;
+  color: #359fa0;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+}
+.auth-card h1 {
+  margin: 0;
+  font-size: clamp(28px, 5vw, 36px);
+  line-height: 1.12;
+  letter-spacing: -1.2px;
+}
+.auth-card h1 span { color: #359fa0; }
+.auth-description {
+  margin: 13px 0 22px;
+  color: #718b88;
+  line-height: 1.6;
+  font-size: 14px;
+}
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  padding: 5px;
+  margin-bottom: 22px;
+  border-radius: 14px;
+  background: #edf7f4;
+}
+.auth-tabs button {
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #5e817d;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.auth-tabs button.active {
+  background: #fff;
+  color: #245d5d;
+  box-shadow: 0 2px 7px rgba(36, 93, 93, .12);
+}
+.auth-form { display: flex; flex-direction: column; }
+.auth-form label {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.auth-form input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 12px 13px;
+  margin: 0 0 16px;
+  border: 1.5px solid #c4dfdc;
+  border-radius: 12px;
+  outline: none;
+  background: #fff;
+  color: #245d5d;
+  font: inherit;
+  font-size: 14px;
+}
+.auth-form input:focus {
+  border-color: #359fa0;
+  box-shadow: 0 0 0 3px rgba(138, 214, 209, .3);
+}
+.auth-password-wrap { position: relative; }
+.auth-password-wrap input { padding-right: 44px; }
+.auth-show-password {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  color: #5e817d;
+  background: transparent;
+  cursor: pointer;
+}
+.auth-submit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  margin-top: 5px;
+  padding: 13px 16px;
+  border: 2px solid #245d5d;
+  border-radius: 13px;
+  background: #ff8c52;
+  color: #245d5d;
+  box-shadow: 3px 3px 0 #245d5d;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.auth-submit:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 #245d5d; }
+.auth-submit:disabled { opacity: .7; cursor: wait; }
+.auth-message { margin: 0 0 14px; font-size: 13px; line-height: 1.5; }
+.auth-error { color: #b83d2a; }
+.auth-success { color: #247b63; }
+.auth-switch-copy {
+  margin: 20px 0 0;
+  text-align: center;
+  color: #718b88;
+  font-size: 13px;
+}
+.auth-switch-copy button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #278c8d;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+.auth-footnote {
+  margin: 25px 0 0;
+  text-align: center;
+  color: #91aaa6;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+.auth-spin { animation: auth-spin 1s linear infinite; }
+@keyframes auth-spin { to { transform: rotate(360deg); } }
+@media (max-width: 480px) {
+  .auth-card { padding: 26px 22px; box-shadow: 6px 6px 0 #8ad6d1; }
+  .auth-decoration-one { left: 2%; top: 2%; font-size: 48px; }
+  .auth-decoration-two { right: 2%; bottom: 2%; font-size: 48px; }
+}
