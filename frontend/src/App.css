@@ -703,6 +703,16 @@ p {
   font-size: 10px;
 }
 
+.favorite-button {
+  flex-shrink: 0;
+}
+
+.favorite-button.is-favorite {
+  color: #ff8c52;
+  background: #fff0c5;
+  border-color: #ff8c52;
+}
+
 .stat-decoration {
   position: absolute;
   right: 12px;

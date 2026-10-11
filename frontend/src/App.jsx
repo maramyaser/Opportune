@@ -27,13 +27,15 @@ import {
   Trash2,
   ExternalLink,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Star,
 } from 'lucide-react'
 import {
   createOpportunity,
   deleteOpportunity,
   extractOpportunity,
   getOpportunities,
+  updateOpportunity,
   logout,
 } from './services/api'
 import './App.css'
@@ -174,21 +176,31 @@ function App() {
     if (!authRequired) loadOpportunities()
   }, [authRequired, loadOpportunities])
 
-  const visibleOpportunities = useMemo(() => {
-    return opportunities.filter((item) => {
-      const type = getType(item)
-      const matchesQuery = `${item.title || ''} ${item.organization || ''} ${type}`
-        .toLowerCase()
-        .includes(query.toLowerCase())
-      const matchesFilter = activeFilter === 'All' || type.toLowerCase() === activeFilter.toLowerCase()
-      const matchesNav =
-        activeNav !== 'Favorites' || item.status?.toLowerCase() === 'favorite'
-      const matchesDeadlines =
-        activeNav !== 'Deadlines' ||
-        (getDateDays(item.deadline) !== null && getDateDays(item.deadline) >= 0)
-      return matchesQuery && matchesFilter && matchesNav && matchesDeadlines
-    })
-  }, [opportunities, query, activeFilter, activeNav])
+  
+const visibleOpportunities = useMemo(() => {
+  return opportunities.filter((item) => {
+    const type = getType(item)
+
+    const matchesQuery = `${item.title || ''} ${item.organization || ''} ${type}`
+      .toLowerCase()
+      .includes(query.toLowerCase())
+
+    const matchesFilter =
+      activeFilter === 'All' ||
+      type.toLowerCase() === activeFilter.toLowerCase()
+
+    const matchesNav =
+      activeNav !== 'Favorites' || item.is_favorite === true
+
+    const matchesDeadlines =
+      activeNav !== 'Deadlines' ||
+      (getDateDays(item.deadline) !== null &&
+        getDateDays(item.deadline) >= 0)
+
+    return matchesQuery && matchesFilter && matchesNav && matchesDeadlines
+  })
+}, [opportunities, query, activeFilter, activeNav])
+
 
   const handleNav = (name) => {
     setActiveNav(name)
@@ -328,6 +340,45 @@ function App() {
       setDeletingId(null)
     }
   }
+
+  
+const toggleFavorite = async (item) => {
+  const nextFavorite = !item.is_favorite
+
+  try {
+    const updated = await updateOpportunity(item.id, {
+      is_favorite: nextFavorite,
+    })
+
+    setOpportunities((current) =>
+      current.map((opportunity) =>
+        opportunity.id === item.id
+          ? { ...opportunity, ...updated }
+          : opportunity
+      )
+    )
+
+    if (selectedOpportunity?.id === item.id) {
+      setSelectedOpportunity((current) =>
+        current ? { ...current, ...updated } : current
+      )
+    }
+
+    setNotice(
+      nextFavorite
+        ? 'Added to favorites!'
+        : 'Removed from favorites.'
+    )
+    setError('')
+  } catch (err) {
+    console.error('Failed to update favorite:', err)
+    setError(
+      err.response?.data?.detail ||
+      'Could not update favorite. Please try again.'
+    )
+  }
+}
+
 
   const daysUntil = (date) => getDateDays(date)
 
@@ -585,6 +636,25 @@ function App() {
                       <span className={`status-tag ${(status || 'saved').toLowerCase().replace(/\s+/g, '-')}`}>
                         {status}
                       </span>
+                      
+<button
+  type="button"
+  className={`icon-button favorite-button ${item.is_favorite ? 'is-favorite' : ''}`}
+  aria-label={
+    item.is_favorite
+      ? `Remove ${item.title} from favorites`
+      : `Add ${item.title} to favorites`
+  }
+  aria-pressed={Boolean(item.is_favorite)}
+  title={item.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
+  onClick={() => toggleFavorite(item)}
+>
+  <Star
+    size={18}
+    fill={item.is_favorite ? 'currentColor' : 'none'}
+  />
+</button>
+
                       <button className="icon-button open-opportunity" aria-label={`Open ${item.title}`} title="View details" onClick={() => setSelectedOpportunity(item)}>
                         <ArrowUpRight size={19} />
                       </button>

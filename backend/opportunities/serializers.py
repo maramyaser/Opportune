@@ -20,6 +20,7 @@ class OpportunitySerializer(serializers.ModelSerializer):
             "required_documents",
             "deadline",
             "status",
+            "is_favorite",
             "notes",
             "extraction_confidence",
             "extraction_warnings",

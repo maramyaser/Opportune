@@ -53,11 +53,15 @@ class Opportunity(models.Model):
     # Null means the deadline is unknown; do not invent one.
     deadline = models.DateTimeField(null=True, blank=True)
 
+    
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
         default=Status.SAVED,
     )
+
+    # Whether the user has marked this opportunity as a favorite.
+    is_favorite = models.BooleanField(default=False)
 
     notes = models.TextField(blank=True)
 
