@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'opportunities',
     'rest_framework.authtoken',
+    'support',
 ]
 
 class LogAuthorizationHeaderMiddleware:

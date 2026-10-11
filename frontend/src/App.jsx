@@ -40,6 +40,7 @@ import {
 } from './services/api'
 import './App.css'
 import Auth from './Auth'
+import HelpSupport from "./components/HelpSupport";
 
 const filters = ['All', 'Internship', 'Scholarship', 'Job', 'Competition']
 
@@ -203,19 +204,29 @@ const visibleOpportunities = useMemo(() => {
 }, [opportunities, query, activeFilter, activeNav])
 
 
-  const handleNav = (name) => {
-    setActiveNav(name)
-    if (name === 'Add opportunity') {
-      openAddModal()
-    }
-    if (name === 'My opportunities') {
-      setActiveFilter('All')
-      setQuery('')
-    }
-    if (name === 'Deadlines') {
-      setActiveFilter('All')
-    }
+  
+const handleNav = (name) => {
+  setActiveNav(name)
+
+  if (name === 'Add opportunity') {
+    openAddModal()
   }
+
+  if (name === 'My opportunities') {
+    setActiveFilter('All')
+    setQuery('')
+  }
+
+  if (name === 'Deadlines' || name === 'Favorites') {
+    setActiveFilter('All')
+  }
+
+  if (name === 'Dashboard') {
+    setActiveFilter('All')
+    setQuery('')
+  }
+}
+
 
   const openAddModal = () => {
     setSourceUrl('')
@@ -465,10 +476,16 @@ const upcomingNotifications = useMemo(() => {
             <button onClick={openAddModal}>Add one <ArrowRight size={15} /></button>
           </div>
 
-          <button className="nav-item help-item" onClick={() => window.alert('Help center coming soon!')}>
-            <CircleHelp size={19} />
-            <span>Help & tips</span>
+          
+          <button className={`nav-item help-item ${
+              activeNav === 'Help & tips' ? 'active' : ''
+            }`}
+              onClick={() => handleNav('Help & tips')}
+          >
+             <CircleHelp size={19} />
+             <span>Help & tips</span>
           </button>
+
           <button className="profile profile-button" onClick={handleLogout} title="Sign out">
             <div className="avatar">O</div>
             <div className="profile-copy">
@@ -568,8 +585,11 @@ const upcomingNotifications = useMemo(() => {
     )}
   </section>
 )}
-
-
+   
+{activeNav === 'Help & tips' ? (
+  <HelpSupport />
+) : (
+  <div className="dashboard-content">
         <div className="dashboard-content">
           <section className="welcome-row">
             <div>
@@ -767,6 +787,8 @@ const upcomingNotifications = useMemo(() => {
             <span>OPPORTUNE © {new Date().getFullYear()}</span>
           </footer>
         </div>
+      </div>
+      )}
       </main>
 
       {showAddModal && (
