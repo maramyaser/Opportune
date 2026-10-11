@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import NotFound from './components/404'
 import {
   AlarmClock,
   ArrowDownRight,
@@ -129,6 +130,11 @@ const fieldStyle = {
 }
 
 function App() {
+  const currentPath = window.location.pathname
+
+  const isKnownPath =
+     currentPath === '/' ||
+     currentPath === '/index.html'
   const [opportunities, setOpportunities] = useState([])
   const [query, setQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('All')
@@ -409,9 +415,11 @@ const upcomingNotifications = useMemo(() => {
     .sort((a, b) => a.daysLeft - b.daysLeft)
 }, [opportunities])
 
+  if (!isKnownPath) { return <NotFound /> }
+
   if (authRequired) {
-    return <Auth onAuthenticated={() => setAuthRequired(false)} />
-  }
+     return <Auth onAuthenticated={() => setAuthRequired(false)} />
+    }
 
   const totalClosingSoon = opportunities.filter((item) => {
     const days = daysUntil(item.deadline)
