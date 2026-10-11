@@ -46,9 +46,26 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 ]
 
+class LogAuthorizationHeaderMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.path.endswith("/api/opportunities/"):
+            print(
+                "[AUTH DEBUG]",
+                "method:", request.method,
+                "has_authorization:",
+                bool(request.META.get("HTTP_AUTHORIZATION")),
+            )
+
+        return self.get_response(request)
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'config.settings.LogAuthorizationHeaderMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

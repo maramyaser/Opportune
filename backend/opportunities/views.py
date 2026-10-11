@@ -1,7 +1,7 @@
 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework import serializers
 from .models import Opportunity
 from .serializers import OpportunitySerializer
 from rest_framework.views import APIView
@@ -12,6 +12,7 @@ from .services.page_extractor import (
     PageExtractionError,
 )
 from .services.ai_extractor import extract_opportunity_details
+
 
 class OpportunityViewSet(viewsets.ModelViewSet):
     serializer_class = OpportunitySerializer
@@ -24,6 +25,7 @@ class OpportunityViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
 
 
 """ This gives you the standard API operations:

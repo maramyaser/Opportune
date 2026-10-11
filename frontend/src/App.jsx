@@ -242,7 +242,9 @@ function App() {
         eligibility: details?.eligibility || '',
         location: details?.location || '',
         benefits: details?.benefits || '',
-        required_documents: details?.required_documents || '',
+        required_documents: Array.isArray(details?.required_documents)
+           ? details.required_documents
+          : [],
         deadline: details?.deadline ? String(details.deadline).slice(0, 10) : '',
         notes: details?.notes || '',
       })
@@ -272,17 +274,19 @@ function App() {
       const payload = {
         title: draft.title.trim(),
         organization: draft.organization || '',
-        opportunity_type: draft.opportunity_type || 'Other',
+        opportunity_type: (draft.opportunity_type || 'other').toLowerCase(),
         source_url: draft.source_url || sourceUrl.trim() || '',
         application_url: draft.application_url || sourceUrl.trim() || '',
         description: draft.description || '',
         eligibility: draft.eligibility || '',
         location: draft.location || '',
         benefits: draft.benefits || '',
-        required_documents: draft.required_documents || '',
+        required_documents: Array.isArray(draft.required_documents)
+          ? draft.required_documents
+          : [],
         deadline: draft.deadline || null,
         notes: draft.notes || '',
-        status: draft.status || 'Saved',
+        status: (draft.status || 'saved').toLowerCase().replace(/\s+/g, '_'),
       }
       await createOpportunity(payload)
       setShowAddModal(false)
@@ -291,11 +295,18 @@ function App() {
       setActiveNav('Dashboard')
       await loadOpportunities()
     } catch (err) {
-      if (err?.response?.status === 401) setAuthRequired(true)
-      setExtractError(getErrorMessage(err, 'Could not save this opportunity. Please try again.'))
-    } finally {
-      setSaving(false)
-    }
+  console.error('Save opportunity failed:', {
+    status: err?.response?.status,
+    data: err?.response?.data,
+    message: err?.message,
+  })
+
+  if (err?.response?.status === 401) setAuthRequired(true)
+
+  setExtractError(
+    getErrorMessage(err, 'Could not save this opportunity. Please try again.')
+    )
+   }
   }
 
   const handleDelete = async (item) => {
@@ -634,8 +645,8 @@ function App() {
                 <label htmlFor="draft-org">Organization</label>
                 <input id="draft-org" style={fieldStyle} value={draft.organization || ''} onChange={(event) => setDraft({ ...draft, organization: event.target.value })} />
                 <label htmlFor="draft-type">Opportunity type</label>
-                <select id="draft-type" style={fieldStyle} value={draft.opportunity_type || 'Other'} onChange={(event) => setDraft({ ...draft, opportunity_type: event.target.value })}>
-                  {['Internship', 'Scholarship', 'Job', 'Fellowship', 'Competition', 'Other'].map((type) => <option key={type} value={type}>{type}</option>)}
+                <select id="draft-type" style={fieldStyle} value={draft.opportunity_type || 'other'} onChange={(event) => setDraft({ ...draft, opportunity_type: event.target.value })}>
+                  {['Internship', 'Scholarship', 'Job', 'Fellowship', 'Competition', 'Other'].map((type) => <option key={type} value={type.toLowerCase()}>{type}</option>)}
                 </select>
                 <label htmlFor="draft-deadline">Deadline</label>
                 <input id="draft-deadline" style={fieldStyle} type="date" value={draft.deadline || ''} onChange={(event) => setDraft({ ...draft, deadline: event.target.value })} />
@@ -675,7 +686,13 @@ function App() {
               ['Description', selectedOpportunity.description || 'Not specified'],
               ['Eligibility', selectedOpportunity.eligibility || 'Not specified'],
               ['Benefits', selectedOpportunity.benefits || 'Not specified'],
-              ['Required documents', selectedOpportunity.required_documents || 'Not specified'],
+              [
+                'Required documents',
+                 Array.isArray(selectedOpportunity.required_documents) &&
+                 selectedOpportunity.required_documents.length > 0
+                     ? selectedOpportunity.required_documents.join(', ')
+                     : 'Not specified',
+             ],
             ].map(([label, value]) => (
               <div key={label} style={{ padding: '12px 0', borderBottom: '1px solid #e0eeeb' }}>
                 <strong style={{ display: 'block', marginBottom: 5 }}>{label}</strong>

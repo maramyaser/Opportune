@@ -39,7 +39,7 @@ class Opportunity(models.Model):
         default=OpportunityType.OTHER,
     )
 
-    source_url = models.URLField(max_length=2048)
+    source_url = models.URLField(max_length=2048, blank=True)
     application_url = models.URLField(max_length=2048, blank=True)
 
     description = models.TextField(blank=True)
