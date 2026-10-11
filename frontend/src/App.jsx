@@ -26,6 +26,8 @@ import {
   X,
   Trash2,
   ExternalLink,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react'
 import {
   createOpportunity,
@@ -132,6 +134,7 @@ function App() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [authRequired, setAuthRequired] = useState(() => !localStorage.getItem('opportune_access_token'))
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const [showAddModal, setShowAddModal] = useState(false)
   const [sourceUrl, setSourceUrl] = useState('')
@@ -342,7 +345,7 @@ function App() {
   ).length
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <aside className="sidebar">
         <a className="brand" href="#home" aria-label="Opportune home" onClick={() => setActiveNav('Dashboard')}>
           <span className="brand-mark">
@@ -412,6 +415,13 @@ function App() {
 
       <main className="main-content" id="home">
         <header className="topbar">
+          <button type="button" className="icon-button sidebar-toggle"
+                  aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+                  aria-expanded={sidebarOpen}
+                  title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+                   onClick={() => setSidebarOpen((open) => !open)}
+          >
+            {sidebarOpen ? <PanelLeftClose size={19} /> : <PanelLeftOpen size={19} />}</button>
           <div className="breadcrumb">
             <span>Workspace</span>
             <span className="breadcrumb-dot">/</span>

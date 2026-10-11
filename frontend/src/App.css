@@ -23,6 +23,32 @@ button {
   border-right: 2px solid #e8f2ee;
 }
 
+/* Sidebar slide animation */
+.sidebar {
+  transition: transform 260ms ease;
+  will-change: transform;
+}
+
+/* Allow the sidebar to slide off-screen */
+.app-shell.sidebar-closed .sidebar {
+  transform: translateX(-100%);
+}
+
+/* Let the dashboard use the freed space */
+.app-shell.sidebar-closed .main-content {
+  margin-left: 0;
+}
+
+/* Keep the toggle button visible and usable */
+.sidebar-toggle {
+  flex-shrink: 0;
+}
+
+/* Smoothly expand the dashboard */
+.main-content {
+  transition: margin-left 260ms ease;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -1087,45 +1113,55 @@ p {
 
 @media (max-width: 760px) {
   .sidebar {
-    position: static;
-    width: 100%;
-    height: auto;
-    padding: 13px 17px;
-    border-right: 0;
-    border-bottom: 2px solid #e8f2ee;
-  }
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: min(248px, calc(100vw - 40px));
+  height: 100vh;
+  height: 100dvh;
+  padding: 20px 13px;
+  overflow-y: auto;
+  background: #ffffff;
+  border-right: 2px solid #e8f2ee;
+  border-bottom: 0;
+ } 
 
   .brand {
-    margin-bottom: 13px;
+  margin-bottom: 25px;
   }
 
-  .sidebar-label,
+  .sidebar-label {
+  display: block;
+  }
+
   .sidebar-bottom {
-    display: none;
+   display: block;
   }
 
-  .nav-list {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-  }
+.nav-list {
+  display: grid;
+  gap: 7px;
+  overflow: visible;
+}
 
-  .nav-item {
-    justify-content: center;
-    width: auto;
-    min-height: 39px;
-    padding: 0 10px;
-    white-space: nowrap;
-    font-size: 11px;
-  }
+.nav-item {
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 43px;
+  padding: 0 12px;
+  font-size: 12px;
+  white-space: normal;
+}
 
-  .second-label + .nav-list {
-    display: none;
-  }
+.second-label + .nav-list {
+  display: grid;
+}
 
-  .main-content {
-    margin-left: 0;
-  }
+.main-content {
+  margin-left: 0;
+}
 
   .topbar {
     min-height: 56px;
