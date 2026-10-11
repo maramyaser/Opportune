@@ -333,17 +333,6 @@ button {
   position: relative;
 }
 
-.notification-button > span {
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 8px;
-  height: 8px;
-  background: var(--orange);
-  border: 1.5px solid white;
-  border-radius: 50%;
-}
-
 .mini-avatar {
   width: 34px;
   height: 34px;
@@ -1374,5 +1363,112 @@ p {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+}
+
+
+.topbar {
+  position: relative;
+}
+
+.notification-button {
+  position: relative;
+}
+
+.notification-button .notification-dot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
+  background: #ff8c52;
+  border: 1.5px solid #fff;
+  border-radius: 50%;
+}
+
+.notification-panel {
+  position: absolute;
+  top: 62px;
+  right: 5%;
+  z-index: 20;
+  width: min(360px, calc(100vw - 32px));
+  padding: 16px;
+  background: #fffdf7;
+  border: 2px solid #b6d9d5;
+  border-radius: 18px;
+  box-shadow: 5px 5px 0 #b6d9d5;
+  color: #245d5d;
+}
+
+.notification-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.notification-panel-heading p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.notification-empty {
+  padding: 12px 4px;
+  font-size: 14px;
+}
+
+.notification-list {
+  display: grid;
+  gap: 8px;
+}
+
+.notification-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px;
+  text-align: left;
+  background: #eaf8f5;
+  color: inherit;
+  border: 1px solid #c7e5df;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: #fff0c5;
+}
+
+.notification-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notification-item-copy {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-item-copy strong {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+.notification-item-copy small {
+  font-size: 12px;
+  color: #359fa0;
+}
+
+@media (max-width: 480px) {
+  .notification-panel {
+    top: 55px;
+    right: 12px;
   }
 }
