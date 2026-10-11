@@ -662,9 +662,6 @@ const upcomingNotifications = useMemo(() => {
                 <Search size={18} />
                 <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search your opportunities..." aria-label="Search opportunities" />
               </label>
-              <button className="filter-button" onClick={() => { setActiveFilter('All'); setQuery('') }}>
-                <Filter size={17} /> Reset filters <ChevronDown size={15} />
-              </button>
             </div>
 
             <div className="filter-tabs" aria-label="Filter by type">
