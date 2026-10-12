@@ -359,7 +359,99 @@ const handleNav = (name) => {
     }
   }
 
-  
+const STATUS_OPTIONS = [
+  { value: 'saved', label: 'Saved' },
+  { value: 'planning', label: 'Planning to Apply' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'submitted', label: 'Submitted' },
+  { value: 'accepted', label: 'Accepted' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'expired', label: 'Expired' },
+]
+
+const formatStatus = (status) => {
+  const option = STATUS_OPTIONS.find(
+    (item) => item.value === status
+  )
+
+  return option?.label || 'Saved'
+}
+
+const handleStatusChange = async (item, newStatus) => {
+  if (newStatus === item.status) return
+
+  const previousStatus = item.status || 'saved'
+
+  // Update the UI immediately.
+  setOpportunities((current) =>
+    current.map((opportunity) =>
+      opportunity.id === item.id
+        ? { ...opportunity, status: newStatus }
+        : opportunity
+    )
+  )
+
+  if (selectedOpportunity?.id === item.id) {
+    setSelectedOpportunity((current) =>
+      current ? { ...current, status: newStatus } : current
+    )
+  }
+
+  setError('')
+  setNotice('')
+
+  try {
+    const updated = await updateOpportunity(item.id, {
+      status: newStatus,
+    })
+
+    // Keep the UI synchronized with Django's response.
+    setOpportunities((current) =>
+      current.map((opportunity) =>
+        opportunity.id === item.id
+          ? { ...opportunity, ...updated }
+          : opportunity
+      )
+    )
+
+    if (selectedOpportunity?.id === item.id) {
+      setSelectedOpportunity((current) =>
+        current ? { ...current, ...updated } : current
+      )
+    }
+
+    setNotice(`Status updated to ${formatStatus(updated.status)}.`)
+  } catch (err) {
+    // Restore the old status if the update fails.
+    setOpportunities((current) =>
+      current.map((opportunity) =>
+        opportunity.id === item.id
+          ? { ...opportunity, status: previousStatus }
+          : opportunity
+      )
+    )
+
+    if (selectedOpportunity?.id === item.id) {
+      setSelectedOpportunity((current) =>
+        current
+          ? { ...current, status: previousStatus }
+          : current
+      )
+    }
+
+    if (err?.response?.status === 401) {
+      setAuthRequired(true)
+    } else {
+      setError(
+        getErrorMessage(
+          err,
+          'Could not update the opportunity status. Please try again.'
+        )
+      )
+    }
+  }
+}
+
 const toggleFavorite = async (item) => {
   const nextFavorite = !item.is_favorite
 
@@ -426,8 +518,8 @@ const upcomingNotifications = useMemo(() => {
     return days !== null && days >= 0 && days <= 14
   }).length
 
-  const inProgressCount = opportunities.filter((item) =>
-    ['in progress', 'in-progress'].includes((item.status || '').toLowerCase()),
+  const inProgressCount = opportunities.filter(
+  (item) => item.status === 'in_progress'
   ).length
 
   return (
@@ -532,8 +624,6 @@ const upcomingNotifications = useMemo(() => {
                  <span className="notification-dot" />
                  )}
            </button>
-
-            <div className="mini-avatar">O</div>
           </div>
         </header>
         
@@ -715,7 +805,7 @@ const upcomingNotifications = useMemo(() => {
                 const Icon = opportunityIcons[typeKey] || Bookmark
                 const color = opportunityColors[typeKey] || 'cream'
                 const days = daysUntil(item.deadline)
-                const status = item.status || 'Saved'
+                const status = item.status || 'saved'
                 return (
                   <article className="opportunity-card" key={item.id}>
                     <div className={`opportunity-icon ${color}`}>
@@ -737,9 +827,19 @@ const upcomingNotifications = useMemo(() => {
                       </div>
                     </div>
                     <div className="opportunity-actions">
-                      <span className={`status-tag ${(status || 'saved').toLowerCase().replace(/\s+/g, '-')}`}>
-                        {status}
-                      </span>
+                       <select className={`status-tag status-${status || 'saved'}`} value={item.status || 'saved'}
+                               aria-label={`Update status for ${item.title}`}
+                               title="Change opportunity status"
+                                  onChange={(event) =>
+                                 handleStatusChange(item, event.target.value)
+                            }
+                       >
+                        {STATUS_OPTIONS.map((option) => (
+                           <option key={option.value} value={option.value}>
+                             {option.label}
+                           </option>
+                          ))}
+                        </select>
                       
 <button
   type="button"

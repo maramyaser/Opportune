@@ -221,11 +221,9 @@ button {
   align-items: center;
   gap: 10px;
   padding: 14px 3px 0;
-  border-top: 1px solid #e7f0ec;
 }
 
-.avatar,
-.mini-avatar {
+.avatar{
   display: grid;
   flex-shrink: 0;
   place-items: center;
@@ -258,7 +256,11 @@ button {
 
 .logout-icon {
   margin-left: auto;
-  color: #91a5a0;
+  color: #23a786;
+}
+
+.profile-button {
+  background: transparent;
 }
 
 .main-content {
@@ -1471,4 +1473,42 @@ p {
     top: 55px;
     right: 12px;
   }
+}
+
+.status-tag {
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  max-width: 180px;
+}
+
+.status-tag:focus-visible {
+  outline: 2px solid #245d5d;
+  outline-offset: 3px;
+}
+
+.status-tag option {
+  color: #245d5d;
+  background: #fffdf7;
+}
+
+.status-in_progress {
+  color: #a8532d;
+  background: #ffe9dd;
+}
+
+.status-submitted {
+  color: #315ea8;
+  background: #e3eeff;
+}
+
+.status-accepted {
+  color: #267653;
+  background: #e5f3ec;
+}
+
+.status-rejected,
+.status-expired {
+  color: #875050;
+  background: #f8e6e6;
 }
