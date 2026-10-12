@@ -336,21 +336,33 @@ const handleLogout = () => {
   }
   }
   const handleDelete = async (item) => {
-    if (!window.confirm(`Delete "${item.title}" from your opportunities?`)) return
-    setDeletingId(item.id)
-    setError('')
-    try {
-      await deleteOpportunity(item.id)
-      setOpportunities((current) => current.filter((opportunity) => opportunity.id !== item.id))
-      if (selectedOpportunity?.id === item.id) setSelectedOpportunity(null)
-      setNotice('Opportunity deleted.')
-    } catch (err) {
-      if (err?.response?.status === 401) setAuthRequired(true)
-      else setError(getErrorMessage(err, 'Could not delete this opportunity.'))
-    } finally {
-      setDeletingId(null)
+  setDeletingId(item.id)
+  setError('')
+
+  try {
+    await deleteOpportunity(item.id)
+
+    setOpportunities((current) =>
+      current.filter((opportunity) => opportunity.id !== item.id)
+    )
+
+    if (selectedOpportunity?.id === item.id) {
+      setSelectedOpportunity(null)
     }
+
+    setNotice('Opportunity deleted.')
+  } catch (err) {
+    if (err?.response?.status === 401) {
+      setAuthRequired(true)
+    } else {
+      setError(
+        getErrorMessage(err, 'Could not delete this opportunity.')
+      )
+    }
+  } finally {
+    setDeletingId(null)
   }
+}
 const STATUS_OPTIONS = [
   { value: 'saved', label: 'Saved' },
   { value: 'planning', label: 'Planning to Apply' },
