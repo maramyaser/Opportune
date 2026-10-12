@@ -42,7 +42,12 @@ import {
 } from './services/api'
 import './App.css'
 import Auth from './Auth'
-import HelpSupport from "./components/HelpSupport";
+import HelpSupport from './components/HelpSupport'
+import Sidebar from './components/layout/Sidebar'
+import Topbar from './components/layout/Topbar'
+import OpportunityModals from './components/modals/OpportunityModals'
+import DashboardOverview from './components/dashboard/DashboardOverview'
+import OpportunityCollection from './components/opportunities/OpportunityCollection'
 const filters = ['All', 'Internship', 'Scholarship', 'Job', 'Competition']
 const opportunityColors = {
   internship: 'mint',
@@ -84,46 +89,12 @@ const getErrorMessage = (error, fallback) =>
   error?.response?.data?.message ||
   error?.message ||
   fallback
-const modalBackdropStyle = {
-  position: 'fixed',
-  inset: 0,
-  zIndex: 1000,
-  background: 'rgba(26, 65, 65, 0.48)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '20px',
-  overflowY: 'auto',
-}
-const modalStyle = {
-  width: 'min(620px, 100%)',
-  maxHeight: '90vh',
-  overflowY: 'auto',
-  background: '#fffdf7',
-  border: '2px solid #245d5d',
-  borderRadius: '24px',
-  boxShadow: '8px 8px 0 #245d5d',
-  padding: '26px',
-  color: '#245d5d',
-}
-const fieldStyle = {
-  display: 'block',
-  width: '100%',
-  boxSizing: 'border-box',
-  marginTop: '7px',
-  marginBottom: '16px',
-  padding: '12px 14px',
-  border: '1.5px solid #b6d9d5',
-  borderRadius: '12px',
-  background: '#fff',
-  color: '#245d5d',
-  font: 'inherit',
-}
+
 function App() {
   const currentPath = window.location.pathname
   const isKnownPath =
-    currentPath === '/' ||
-    currentPath === '/index.html'
+     currentPath === '/' ||
+     currentPath === '/index.html'
   const [opportunities, setOpportunities] = useState([])
   const [query, setQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('All')
@@ -170,89 +141,89 @@ function App() {
   useEffect(() => {
     if (!authRequired) loadOpportunities()
   }, [authRequired, loadOpportunities])
-  const visibleOpportunities = useMemo(() => {
-    return opportunities.filter((item) => {
-      const type = getType(item)
-      const matchesQuery = `${item.title || ''} ${item.organization || ''} ${type}`
-        .toLowerCase()
-        .includes(query.toLowerCase())
-      const matchesFilter =
-        activeFilter === 'All' ||
-        type.toLowerCase() === activeFilter.toLowerCase()
-      const matchesNav =
-        activeNav !== 'Favorites' || item.is_favorite === true
-      const matchesDeadlines =
-        activeNav !== 'Deadlines' ||
-        (getDateDays(item.deadline) !== null &&
-          getDateDays(item.deadline) >= 0)
-      return matchesQuery && matchesFilter && matchesNav && matchesDeadlines
-    })
-  }, [opportunities, query, activeFilter, activeNav])
-  const handleNav = (name) => {
-    setActiveNav(name)
-    if (name === 'Add opportunity') {
-      openAddModal()
-    }
-    if (name === 'My opportunities') {
-      setActiveFilter('All')
-      setQuery('')
-    }
-    if (name === 'Deadlines' || name === 'Favorites') {
-      setActiveFilter('All')
-    }
-    if (name === 'Dashboard') {
-      setActiveFilter('All')
-      setQuery('')
-    }
+const visibleOpportunities = useMemo(() => {
+  return opportunities.filter((item) => {
+    const type = getType(item)
+    const matchesQuery = `${item.title || ''} ${item.organization || ''} ${type}`
+      .toLowerCase()
+      .includes(query.toLowerCase())
+    const matchesFilter =
+      activeFilter === 'All' ||
+      type.toLowerCase() === activeFilter.toLowerCase()
+    const matchesNav =
+      activeNav !== 'Favorites' || item.is_favorite === true
+    const matchesDeadlines =
+      activeNav !== 'Deadlines' ||
+      (getDateDays(item.deadline) !== null &&
+        getDateDays(item.deadline) >= 0)
+    return matchesQuery && matchesFilter && matchesNav && matchesDeadlines
+  })
+}, [opportunities, query, activeFilter, activeNav])
+const handleNav = (name) => {
+  setActiveNav(name)
+  if (name === 'Add opportunity') {
+    openAddModal()
   }
-  const openAddModal = () => {
-    setEditingOpportunityId(null)
-    setSourceUrl('')
-    setPastedText('')
-    setDraft(null)
-    setExtractError('')
-    setSelectedOpportunity(null)
-    setShowAddModal(true)
+  if (name === 'My opportunities') {
+    setActiveFilter('All')
+    setQuery('')
   }
-  const openEditModal = (item) => {
-    if (!item || item.id == null) {
-      console.error('Cannot edit opportunity: missing opportunity or ID.', item)
-      setError('Could not open this opportunity for editing.')
-      return
-    }
-    setEditingOpportunityId(item.id)
-    setSourceUrl('')
-    setPastedText('')
-    setExtractError('')
-    setDraft({
-      ...item,
-      title: item.title || '',
-      organization: item.organization || '',
-      opportunity_type: (item.opportunity_type || item.type || 'other').toLowerCase(),
-      source_url: item.source_url || '',
-      application_url: item.application_url || '',
-      description: item.description || '',
-      eligibility: item.eligibility || '',
-      location: item.location || '',
-      benefits: item.benefits || '',
-      required_documents: Array.isArray(item.required_documents) ? item.required_documents : [],
-      deadline: item.deadline ? String(item.deadline).slice(0, 10) : '',
-      status: item.status || 'saved',
-      notes: item.notes || '',
-    })
-    setSelectedOpportunity(null)
-    setShowAddModal(true)
+  if (name === 'Deadlines' || name === 'Favorites') {
+    setActiveFilter('All')
   }
-  const closeOpportunityForm = () => {
-    if (saving || extracting) return
-    setShowAddModal(false)
-    setDraft(null)
-    setEditingOpportunityId(null)
-    setSourceUrl('')
-    setPastedText('')
-    setExtractError('')
+  if (name === 'Dashboard') {
+    setActiveFilter('All')
+    setQuery('')
   }
-  const handleLogout = () => {
+}
+const openAddModal = () => {
+  setEditingOpportunityId(null)
+  setSourceUrl('')
+  setPastedText('')
+  setDraft(null)
+  setExtractError('')
+  setSelectedOpportunity(null)
+  setShowAddModal(true)
+}
+const openEditModal = (item) => {
+  if (!item || item.id == null) {
+    console.error('Cannot edit opportunity: missing opportunity or ID.', item)
+    setError('Could not open this opportunity for editing.')
+    return
+  }
+  setEditingOpportunityId(item.id)
+  setSourceUrl('')
+  setPastedText('')
+  setExtractError('')
+  setDraft({
+    ...item,
+    title: item.title || '',
+    organization: item.organization || '',
+    opportunity_type: (item.opportunity_type || item.type || 'other').toLowerCase(),
+    source_url: item.source_url || '',
+    application_url: item.application_url || '',
+    description: item.description || '',
+    eligibility: item.eligibility || '',
+    location: item.location || '',
+    benefits: item.benefits || '',
+    required_documents: Array.isArray(item.required_documents) ? item.required_documents : [],
+    deadline: item.deadline ? String(item.deadline).slice(0, 10) : '',
+    status: item.status || 'saved',
+    notes: item.notes || '',
+  })
+  setSelectedOpportunity(null)
+  setShowAddModal(true)
+}
+const closeOpportunityForm = () => {
+  if (saving || extracting) return
+  setShowAddModal(false)
+  setDraft(null)
+  setEditingOpportunityId(null)
+  setSourceUrl('')
+  setPastedText('')
+  setExtractError('')
+}
+const handleLogout = () => {
     logout()
     setOpportunities([])
     setAuthRequired(true)
@@ -284,7 +255,7 @@ function App() {
         location: details?.location || '',
         benefits: details?.benefits || '',
         required_documents: Array.isArray(details?.required_documents)
-          ? details.required_documents
+           ? details.required_documents
           : [],
         deadline: details?.deadline ? String(details.deadline).slice(0, 10) : '',
         notes: details?.notes || '',
@@ -328,22 +299,22 @@ function App() {
         status: (draft.status || 'saved').toLowerCase().replace(/\s+/g, '_'),
       }
       if (editingOpportunityId !== null) {
-        const updated = await updateOpportunity(
-          editingOpportunityId,
-          payload
-        )
+          const updated = await updateOpportunity(
+             editingOpportunityId,
+             payload
+         )
         setOpportunities((current) =>
-          current.map((item) =>
-            item.id === editingOpportunityId
-              ? { ...item, ...updated }
-              : item
-          )
-        )
-        setSelectedOpportunity(updated)
-        setNotice('Opportunity updated successfully!')
-      } else {
+            current.map((item) =>
+              item.id === editingOpportunityId
+                ? { ...item, ...updated }
+                : item
+           )
+         )
+          setSelectedOpportunity(updated)
+         setNotice('Opportunity updated successfully!')
+        } else {
         await createOpportunity(payload)
-        setNotice('Opportunity saved to your collection!')
+       setNotice('Opportunity saved to your collection!')
       }
       setShowAddModal(false)
       setDraft(null)
@@ -351,18 +322,18 @@ function App() {
       setActiveNav('Dashboard')
       await loadOpportunities()
     } catch (err) {
-      console.error('Save opportunity failed:', {
-        status: err?.response?.status,
-        data: err?.response?.data,
-        message: err?.message,
-      })
-      if (err?.response?.status === 401) setAuthRequired(true)
-      setExtractError(
-        getErrorMessage(err, 'Could not save this opportunity. Please try again.')
-      )
-    } finally {
-      setSaving(false)
-    }
+  console.error('Save opportunity failed:', {
+    status: err?.response?.status,
+    data: err?.response?.data,
+    message: err?.message,
+  })
+  if (err?.response?.status === 401) setAuthRequired(true)
+  setExtractError(
+    getErrorMessage(err, 'Could not save this opportunity. Please try again.')
+    )
+  } finally {
+    setSaving(false)
+  }
   }
   const handleDelete = async (item) => {
     if (!window.confirm(`Delete "${item.title}" from your opportunities?`)) return
@@ -380,607 +351,228 @@ function App() {
       setDeletingId(null)
     }
   }
-  const STATUS_OPTIONS = [
-    { value: 'saved', label: 'Saved' },
-    { value: 'planning', label: 'Planning to Apply' },
-    { value: 'in_progress', label: 'In Progress' },
-    { value: 'submitted', label: 'Submitted' },
-    { value: 'accepted', label: 'Accepted' },
-    { value: 'rejected', label: 'Rejected' },
-    { value: 'expired', label: 'Expired' },
-  ]
-  const formatStatus = (status) => {
-    const option = STATUS_OPTIONS.find(
-      (item) => item.value === status
+const STATUS_OPTIONS = [
+  { value: 'saved', label: 'Saved' },
+  { value: 'planning', label: 'Planning to Apply' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'submitted', label: 'Submitted' },
+  { value: 'accepted', label: 'Accepted' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'expired', label: 'Expired' },
+]
+const formatStatus = (status) => {
+  const option = STATUS_OPTIONS.find(
+    (item) => item.value === status
+  )
+  return option?.label || 'Saved'
+}
+const handleStatusChange = async (item, newStatus) => {
+  if (newStatus === item.status) return
+  const previousStatus = item.status || 'saved'
+  // Update the UI immediately.
+  setOpportunities((current) =>
+    current.map((opportunity) =>
+      opportunity.id === item.id
+        ? { ...opportunity, status: newStatus }
+        : opportunity
     )
-    return option?.label || 'Saved'
+  )
+  if (selectedOpportunity?.id === item.id) {
+    setSelectedOpportunity((current) =>
+      current ? { ...current, status: newStatus } : current
+    )
   }
-  const handleStatusChange = async (item, newStatus) => {
-    if (newStatus === item.status) return
-    const previousStatus = item.status || 'saved'
-    // Update the UI immediately.
+  setError('')
+  setNotice('')
+  try {
+    const updated = await updateOpportunity(item.id, {
+      status: newStatus,
+    })
+    // Keep the UI synchronized with Django's response.
     setOpportunities((current) =>
       current.map((opportunity) =>
         opportunity.id === item.id
-          ? { ...opportunity, status: newStatus }
+          ? { ...opportunity, ...updated }
           : opportunity
       )
     )
     if (selectedOpportunity?.id === item.id) {
       setSelectedOpportunity((current) =>
-        current ? { ...current, status: newStatus } : current
+        current ? { ...current, ...updated } : current
       )
     }
-    setError('')
-    setNotice('')
-    try {
-      const updated = await updateOpportunity(item.id, {
-        status: newStatus,
-      })
-      // Keep the UI synchronized with Django's response.
-      setOpportunities((current) =>
-        current.map((opportunity) =>
-          opportunity.id === item.id
-            ? { ...opportunity, ...updated }
-            : opportunity
-        )
+    setNotice(`Status updated to ${formatStatus(updated.status)}.`)
+  } catch (err) {
+    // Restore the old status if the update fails.
+    setOpportunities((current) =>
+      current.map((opportunity) =>
+        opportunity.id === item.id
+          ? { ...opportunity, status: previousStatus }
+          : opportunity
       )
-      if (selectedOpportunity?.id === item.id) {
-        setSelectedOpportunity((current) =>
-          current ? { ...current, ...updated } : current
-        )
-      }
-      setNotice(`Status updated to ${formatStatus(updated.status)}.`)
-    } catch (err) {
-      // Restore the old status if the update fails.
-      setOpportunities((current) =>
-        current.map((opportunity) =>
-          opportunity.id === item.id
-            ? { ...opportunity, status: previousStatus }
-            : opportunity
-        )
+    )
+    if (selectedOpportunity?.id === item.id) {
+      setSelectedOpportunity((current) =>
+        current
+          ? { ...current, status: previousStatus }
+          : current
       )
-      if (selectedOpportunity?.id === item.id) {
-        setSelectedOpportunity((current) =>
-          current
-            ? { ...current, status: previousStatus }
-            : current
-        )
-      }
-      if (err?.response?.status === 401) {
-        setAuthRequired(true)
-      } else {
-        setError(
-          getErrorMessage(
-            err,
-            'Could not update the opportunity status. Please try again.'
-          )
-        )
-      }
     }
-  }
-  const toggleFavorite = async (item) => {
-    const nextFavorite = !item.is_favorite
-    try {
-      const updated = await updateOpportunity(item.id, {
-        is_favorite: nextFavorite,
-      })
-      setOpportunities((current) =>
-        current.map((opportunity) =>
-          opportunity.id === item.id
-            ? { ...opportunity, ...updated }
-            : opportunity
-        )
-      )
-      if (selectedOpportunity?.id === item.id) {
-        setSelectedOpportunity((current) =>
-          current ? { ...current, ...updated } : current
-        )
-      }
-      setNotice(
-        nextFavorite
-          ? 'Added to favorites!'
-          : 'Removed from favorites.'
-      )
-      setError('')
-    } catch (err) {
-      console.error('Failed to update favorite:', err)
+    if (err?.response?.status === 401) {
+      setAuthRequired(true)
+    } else {
       setError(
-        err.response?.data?.detail ||
-        'Could not update favorite. Please try again.'
+        getErrorMessage(
+          err,
+          'Could not update the opportunity status. Please try again.'
+        )
       )
     }
   }
-  const daysUntil = (date) => getDateDays(date)
-  const upcomingNotifications = useMemo(() => {
-    return opportunities
-      .map((item) => ({
-        ...item,
-        daysLeft: daysUntil(item.deadline),
-      }))
-      .filter(
-        (item) =>
-          item.daysLeft !== null &&
-          item.daysLeft >= 0 &&
-          item.daysLeft <= 7
+}
+const toggleFavorite = async (item) => {
+  const nextFavorite = !item.is_favorite
+  try {
+    const updated = await updateOpportunity(item.id, {
+      is_favorite: nextFavorite,
+    })
+    setOpportunities((current) =>
+      current.map((opportunity) =>
+        opportunity.id === item.id
+          ? { ...opportunity, ...updated }
+          : opportunity
       )
-      .sort((a, b) => a.daysLeft - b.daysLeft)
-  }, [opportunities])
+    )
+    if (selectedOpportunity?.id === item.id) {
+      setSelectedOpportunity((current) =>
+        current ? { ...current, ...updated } : current
+      )
+    }
+    setNotice(
+      nextFavorite
+        ? 'Added to favorites!'
+        : 'Removed from favorites.'
+    )
+    setError('')
+  } catch (err) {
+    console.error('Failed to update favorite:', err)
+    setError(
+      err.response?.data?.detail ||
+      'Could not update favorite. Please try again.'
+    )
+  }
+}
+  const daysUntil = (date) => getDateDays(date)
+const upcomingNotifications = useMemo(() => {
+  return opportunities
+    .map((item) => ({
+      ...item,
+      daysLeft: daysUntil(item.deadline),
+    }))
+    .filter(
+      (item) =>
+        item.daysLeft !== null &&
+        item.daysLeft >= 0 &&
+        item.daysLeft <= 7
+    )
+    .sort((a, b) => a.daysLeft - b.daysLeft)
+}, [opportunities])
   if (!isKnownPath) { return <NotFound /> }
   if (authRequired) {
-    return <Auth onAuthenticated={() => setAuthRequired(false)} />
-  }
+     return <Auth onAuthenticated={() => setAuthRequired(false)} />
+    }
   const totalClosingSoon = opportunities.filter((item) => {
     const days = daysUntil(item.deadline)
     return days !== null && days >= 0 && days <= 14
   }).length
   const inProgressCount = opportunities.filter(
-    (item) => item.status === 'in_progress'
+  (item) => item.status === 'in_progress'
   ).length
   return (
     <div className={`app-shell ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-      <aside className="sidebar">
-        <a className="brand" href="#home" aria-label="Opportune home" onClick={() => setActiveNav('Dashboard')}>
-          <span className="brand-mark">
-            <CalendarDays size={25} strokeWidth={2.7} />
-            <span className="brand-spark">✦</span>
-          </span>
-          <span>
-            <strong>opportune</strong>
-            <small>YOUR FUTURE, ON TRACK</small>
-          </span>
-        </a>
-        <div className="sidebar-label">WORKSPACE</div>
-        <nav className="nav-list" aria-label="Main navigation">
-          {[
-            { name: 'Dashboard', icon: LayoutDashboard },
-            { name: 'My opportunities', icon: Bookmark },
-            { name: 'Deadlines', icon: AlarmClock },
-          ].map(({ name, icon: Icon }) => (
-            <button
-              key={name}
-              className={`nav-item ${activeNav === name ? 'active' : ''}`}
-              onClick={() => handleNav(name)}
-            >
-              <Icon size={19} />
-              <span>{name}</span>
-              {name === 'Deadlines' && <span className="nav-count">{totalClosingSoon}</span>}
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-label second-label">YOUR SPACE</div>
-        <nav className="nav-list">
-          <button className={`nav-item ${activeNav === 'Favorites' ? 'active' : ''}`} onClick={() => handleNav('Favorites')}>
-            <Heart size={19} />
-            <span>Favorites</span>
-          </button>
-          <button className={`nav-item ${activeNav === 'Documents' ? 'active' : ''}`} onClick={() => handleNav('Documents')}>
-            <FileText size={19} />
-            <span>Documents</span>
-          </button>
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="mascot-card">
-            <div className="mascot-star">✦</div>
-            <Sparkles size={24} />
-            <strong>Big dreams?</strong>
-            <span>Let's keep track of every single one.</span>
-            <button onClick={openAddModal}>Add one <ArrowRight size={15} /></button>
-          </div>
-          <button className={`nav-item help-item ${
-            activeNav === 'Help & tips' ? 'active' : ''
-          }`}
-            onClick={() => handleNav('Help & tips')}
-          >
-            <CircleHelp size={19} />
-            <span>Help & tips</span>
-          </button>
-          <button className="profile profile-button" onClick={handleLogout} title="Sign out">
-            <div className="avatar">O</div>
-            <div className="profile-copy">
-              <strong>Opportunity hunter</strong>
-              <span>Sign out of Opportune</span>
-            </div>
-            <LogOut size={17} className="logout-icon" />
-          </button>
-        </div>
-      </aside>
+      <Sidebar activeNav={activeNav} handleNav={handleNav} totalClosingSoon={totalClosingSoon} openAddModal={openAddModal} handleLogout={handleLogout} />
       <main className="main-content" id="home">
-        <header className="topbar">
-          <button type="button" className="icon-button sidebar-toggle"
-            aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-            aria-expanded={sidebarOpen}
-            title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-            onClick={() => setSidebarOpen((open) => !open)}
-          >
-            {sidebarOpen ? <PanelLeftClose size={19} /> : <PanelLeftOpen size={19} />}</button>
-          <div className="breadcrumb">
-            <span>Workspace</span>
-            <span className="breadcrumb-dot">/</span>
-            <strong>{activeNav}</strong>
-          </div>
-          <div className="topbar-right">
-            <span className="today-label">
-              <CalendarDays size={16} />
-              {new Date().toLocaleDateString('en', { weekday: 'short', day: 'numeric', month: 'short' })}
-            </span>
-            <button type="button" className="icon-button notification-button" aria-label={`Upcoming deadline notifications: ${upcomingNotifications.length}`} aria-expanded={showNotifications}
-              title="Upcoming deadline notifications" onClick={() => setShowNotifications((open) => !open)} >
-              <Bell size={19} />
-              {upcomingNotifications.length > 0 && (
-                <span className="notification-dot" />
-              )}
-            </button>
-          </div>
-        </header>
-        {showNotifications && (
-          <section
-            className="notification-panel"
-            aria-label="Upcoming deadline notifications"
-          >
-            <div className="notification-panel-heading">
-              <div>
-                <strong>Coming up soon</strong>
-                <p>Opportunities due within 7 days</p>
-              </div>
-              <button
-                type="button"
-                className="icon-button"
-                aria-label="Close notifications"
-                onClick={() => setShowNotifications(false)}
-              >
-                <X size={17} />
-              </button>
-            </div>
-            {upcomingNotifications.length === 0 ? (
-              <p className="notification-empty">
-                You're all caught up! No deadlines in the next 7 days.
-              </p>
-            ) : (
-              <div className="notification-list">
-                {upcomingNotifications.map((item) => (
-                  <button
-                    type="button"
-                    className="notification-item"
-                    key={item.id}
-                    onClick={() => {
-                      setSelectedOpportunity(item)
-                      setShowNotifications(false)
-                    }}
-                  >
-                    <span className="notification-item-icon">
-                      <AlarmClock size={18} />
-                    </span>
-                    <span className="notification-item-copy">
-                      <strong>{item.title}</strong>
-                      <small>
-                        {item.daysLeft === 0
-                          ? 'Due today!'
-                          : item.daysLeft === 1
-                            ? 'Due tomorrow'
-                            : `Due in ${item.daysLeft} days`}
-                      </small>
-                    </span>
-                    <ArrowRight size={16} />
-                  </button>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-        {activeNav === 'Help & tips' ? (
-          <HelpSupport />
-        ) : (
-          <div className="dashboard-content">
-            <div className="dashboard-content">
-              <section className="welcome-row">
-                <div>
-                  <div className="eyebrow"><Sparkles size={15} /> YOUR LITTLE LAUNCHPAD</div>
-                  <h1>Your next big thing <span>starts here.</span></h1>
-                  <p className="welcome-copy">
-                    Every opportunity deserves a chance. We'll help you remember yours.
-                  </p>
-                </div>
-                <div className="welcome-doodle" aria-hidden="true">
-                  <div className="doodle-circle"><Target size={40} /></div>
-                  <span className="doodle-star star-one">✦</span>
-                  <span className="doodle-star star-two">✳</span>
-                </div>
-              </section>
-              <section className="hero-banner">
-                <div className="hero-copy">
-                  <span className="hero-pill"><Sparkles size={14} /> YOUR OPPORTUNITY ASSISTANT</span>
-                  <h2>Found something exciting?</h2>
-                  <p>Drop the link. Let AI do the reading.<br />You focus on making it happen.</p>
-                  <button id="add-opportunity" className="primary-button" onClick={openAddModal}>
-                    <Plus size={18} /> Track an opportunity <ArrowRight size={17} />
-                  </button>
-                </div>
-                <div className="hero-illustration" aria-hidden="true">
-                  <div className="illustration-sun" />
-                  <div className="illustration-paper">
-                    <div className="paper-top"><span /><span /><span /></div>
-                    <div className="paper-check"><Check size={25} /></div>
-                    <div className="paper-line line-long" />
-                    <div className="paper-line" />
-                    <div className="paper-line line-short" />
-                    <div className="paper-star">✦</div>
-                  </div>
-                  <div className="illustration-clock"><Clock3 size={29} /></div>
-                  <span className="illustration-spark spark-a">✦</span>
-                  <span className="illustration-spark spark-b">✳</span>
-                </div>
-              </section>
-              {notice && (
-                <div role="status" style={{ padding: '12px 16px', marginBottom: 18, borderRadius: 12, background: '#e8f8f4', color: '#245d5d', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Check size={18} /> {notice}
-                  <button aria-label="Dismiss notification" onClick={() => setNotice('')} style={{ marginLeft: 'auto', border: 0, background: 'transparent', cursor: 'pointer', color: 'inherit' }}><X size={16} /></button>
-                </div>
-              )}
-              {error && (
-                <div role="alert" style={{ padding: '12px 16px', marginBottom: 18, borderRadius: 12, background: '#fff0e9', color: '#9b3c25', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {error}
-                  <button onClick={loadOpportunities} className="secondary-button">Try again</button>
-                </div>
-              )}
-              <section className="stats-grid" aria-label="Opportunity summary">
-                <article className="stat-card stat-mint">
-                  <div className="stat-top"><span>ALL SAVED</span><Bookmark size={19} /></div>
-                  <div className="stat-number">{String(opportunities.length).padStart(2, '0')}</div>
-                  <div className="stat-bottom"><span>Opportunities in your corner</span><ArrowUpRight size={16} /></div>
-                  <div className="stat-decoration">✳</div>
-                </article>
-                <article className="stat-card stat-cream">
-                  <div className="stat-top"><span>CLOSING SOON</span><AlarmClock size={19} /></div>
-                  <div className="stat-number">{String(totalClosingSoon).padStart(2, '0')}</div>
-                  <div className="stat-bottom"><span>Time to take action!</span><ArrowDownRight size={16} /></div>
-                  <div className="stat-decoration">✦</div>
-                </article>
-                <article className="stat-card stat-peach">
-                  <div className="stat-top"><span>IN PROGRESS</span><Target size={19} /></div>
-                  <div className="stat-number">{String(inProgressCount).padStart(2, '0')}</div>
-                  <div className="stat-bottom"><span>You're making moves</span><ArrowUpRight size={16} /></div>
-                  <div className="stat-decoration">✳</div>
-                </article>
-              </section>
-              <section className="opportunities-section">
-                <div className="section-heading">
-                  <div>
-                    <div className="section-kicker">YOUR COLLECTION</div>
-                    <h2>{activeNav === 'Deadlines' ? 'Deadlines to watch' : activeNav === 'Favorites' ? 'Your favorite opportunities' : 'Opportunities to chase'} <span>✦</span></h2>
-                    <p>Little steps today, big wins tomorrow.</p>
-                  </div>
-                  <button className="secondary-button" onClick={() => handleNav('My opportunities')}>
-                    View all <ArrowRight size={16} />
-                  </button>
-                </div>
-                <div className="toolbar">
-                  <label className="search-box">
-                    <Search size={18} />
-                    <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search your opportunities..." aria-label="Search opportunities" />
-                  </label>
-                </div>
-                <div className="filter-tabs" aria-label="Filter by type">
-                  {filters.map((filter) => (
-                    <button key={filter} className={`filter-tab ${activeFilter === filter ? 'selected' : ''}`} onClick={() => setActiveFilter(filter)}>
-                      {filter}
-                    </button>
-                  ))}
-                </div>
-                <div className="opportunity-list">
-                  {loading && opportunities.length === 0 && (
-                    <div className="empty-state">
-                      <LoaderCircle size={28} className="spin" />
-                      <h3>Gathering your opportunities...</h3>
-                      <p>Just a moment while we get everything ready.</p>
-                    </div>
-                  )}
-                  {!loading && visibleOpportunities.map((item) => {
-                    const type = getType(item)
-                    const typeKey = type.toLowerCase()
-                    const Icon = opportunityIcons[typeKey] || Bookmark
-                    const color = opportunityColors[typeKey] || 'cream'
-                    const days = daysUntil(item.deadline)
-                    const status = item.status || 'saved'
-                    return (
-                      <article className="opportunity-card" key={item.id}>
-                        <div className={`opportunity-icon ${color}`}>
-                          <Icon size={24} />
-                        </div>
-                        <div className="opportunity-info">
-                          <div className="opportunity-title-row">
-                            <h3>{item.title || 'Untitled opportunity'}</h3>
-                            <span className="type-tag">{type}</span>
-                          </div>
-                          <p className="organization">{item.organization || 'Organization not specified'}</p>
-                          <p className="opportunity-description">{item.description || 'Open the details to review eligibility, benefits, and application information.'}</p>
-                          <div className="opportunity-meta">
-                            <span><CalendarDays size={15} /> {formatDeadline(item.deadline)}</span>
-                            <span className={days !== null && days >= 0 && days <= 7 ? 'urgent' : ''}>
-                              <Clock3 size={15} />
-                              {days === null ? 'No deadline' : days < 0 ? 'Deadline passed' : days === 0 ? 'Due today!' : `${days} days left`}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="opportunity-actions">
-                          <select className={`status-tag status-${status || 'saved'}`} value={item.status || 'saved'}
-                            aria-label={`Update status for ${item.title}`}
-                            title="Change opportunity status"
-                            onChange={(event) =>
-                              handleStatusChange(item, event.target.value)
-                            }
-                          >
-                            {STATUS_OPTIONS.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            type="button"
-                            className={`icon-button favorite-button ${item.is_favorite ? 'is-favorite' : ''}`}
-                            aria-label={
-                              item.is_favorite
-                                ? `Remove ${item.title} from favorites`
-                                : `Add ${item.title} to favorites`
-                            }
-                            aria-pressed={Boolean(item.is_favorite)}
-                            title={item.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
-                            onClick={() => toggleFavorite(item)}
-                          >
-                            <Star
-                              size={18}
-                              fill={item.is_favorite ? 'currentColor' : 'none'}
-                            />
-                          </button>
-                          <button className="icon-button open-opportunity" aria-label={`Open ${item.title}`} title="View details" onClick={() => setSelectedOpportunity(item)}>
-                            <ArrowUpRight size={19} />
-                          </button>
-                          <button className="icon-button open-opportunity" aria-label={`Delete ${item.title}`} title="Delete opportunity" disabled={deletingId === item.id} onClick={() => handleDelete(item)}>
-                            {deletingId === item.id ? <LoaderCircle size={17} className="spin" /> : <Trash2 size={17} />}
-                          </button>
-                        </div>
-                      </article>
-                    )
-                  })}
-                  {!loading && visibleOpportunities.length === 0 && !error && (
-                    <div className="empty-state">
-                      <Search size={28} />
-                      <h3>{opportunities.length === 0 ? 'Your collection is ready for its first opportunity' : 'No matching opportunities yet'}</h3>
-                      <p>{opportunities.length === 0 ? 'Paste an opportunity link and let Opportune help you keep track.' : 'Try another search or select a different category.'}</p>
-                      {opportunities.length === 0 ? (
-                        <button className="primary-button" onClick={openAddModal}><Plus size={18} /> Track an opportunity</button>
-                      ) : (
-                        <button className="secondary-button" onClick={() => { setQuery(''); setActiveFilter('All'); setActiveNav('Dashboard') }}>Clear filters</button>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="bottom-note">
-                  <span className="note-icon"><Sparkles size={18} /></span>
-                  <p><strong>A little reminder:</strong> saving an opportunity is the first step. Taking action is where the magic happens.</p>
-                </div>
-              </section>
-              <footer className="footer">
-                <span>Made with <Heart size={13} fill="currentColor" /> for your next big thing.</span>
-                <span>OPPORTUNE © {new Date().getFullYear()}</span>
-              </footer>
-            </div>
-          </div>
-        )}
+        <Topbar
+          activeNav={activeNav}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          upcomingNotifications={upcomingNotifications}
+          showNotifications={showNotifications}
+          setShowNotifications={setShowNotifications}
+          setSelectedOpportunity={setSelectedOpportunity}
+        />
+{activeNav === 'Help & tips' ? (
+  <HelpSupport />
+) : (
+  <div className="dashboard-content">
+        <div className="dashboard-content">
+            
+         <DashboardOverview
+           notice={notice}
+           setNotice={setNotice}
+           error={error}
+           loadOpportunities={loadOpportunities}
+           opportunities={opportunities}
+           totalClosingSoon={totalClosingSoon}
+          inProgressCount={inProgressCount}
+          openAddModal={openAddModal}
+          />
+
+          <OpportunityCollection
+            activeNav={activeNav}
+            handleNav={handleNav}
+            query={query}
+            setQuery={setQuery}
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+            loading={loading}
+            opportunities={opportunities}
+            visibleOpportunities={visibleOpportunities}
+            error={error}
+            getType={getType}
+            formatDeadline={formatDeadline}
+            daysUntil={daysUntil}
+            STATUS_OPTIONS={STATUS_OPTIONS}
+            handleStatusChange={handleStatusChange}
+            toggleFavorite={toggleFavorite}
+            setSelectedOpportunity={setSelectedOpportunity}
+            deletingId={deletingId}
+            handleDelete={handleDelete}
+            openAddModal={openAddModal}
+            setActiveNav={setActiveNav}
+          />
+          <footer className="footer">
+            <span>Made with <Heart size={13} fill="currentColor" /> for your next big thing.</span>
+            <span>OPPORTUNE © {new Date().getFullYear()}</span>
+          </footer>
+        </div>
+      </div>
+      )}
       </main>
-      {showAddModal && (
-        <div style={modalBackdropStyle} onMouseDown={(event) => { if (event.target === event.currentTarget) closeOpportunityForm() }}>
-          <section style={modalStyle} role="dialog" aria-modal="true" aria-labelledby="add-modal-title" onMouseDown={(event) => event.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' }}>
-              <div>
-                <div className="eyebrow"><Sparkles size={15} /> YOUR OPPORTUNITY ASSISTANT</div>
-                <h2 id="add-modal-title" style={{ margin: '10px 0 6px' }}>{editingOpportunityId !== null ? 'Edit opportunity' : draft ? 'Review the details' : 'Track an opportunity'}</h2>
-                <p style={{ marginTop: 0 }}>{editingOpportunityId !== null ? 'Update the details for this opportunity.' : 'Paste a link or text. AI will help identify the important details.'}</p>
-              </div>
-              <button className="icon-button" aria-label="Close" onClick={closeOpportunityForm} disabled={extracting || saving}><X size={19} /></button>
-            </div>
-            {!draft ? (
-              <form onSubmit={handleExtract}>
-                <label htmlFor="opportunity-url">Opportunity URL</label>
-                <input id="opportunity-url" style={fieldStyle} type="url" placeholder="https://example.com/opportunity" value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)} />
-                <div style={{ textAlign: 'center', margin: '0 0 14px', fontWeight: 800, opacity: 0.65 }}>OR PASTE THE DESCRIPTION</div>
-                <label htmlFor="opportunity-text">Opportunity text</label>
-                <textarea id="opportunity-text" style={{ ...fieldStyle, resize: 'vertical' }} rows={5} placeholder="Paste the opportunity description here..." value={pastedText} onChange={(event) => setPastedText(event.target.value)} />
-                {extractError && <p role="alert" style={{ color: '#b83d2a' }}>{extractError}</p>}
-                <button className="primary-button" type="submit" disabled={extracting}>
-                  {extracting ? <LoaderCircle size={18} className="spin" /> : <Sparkles size={18} />}
-                  {extracting ? 'Extracting details...' : 'Extract details'}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={handleSave}>
-                <label htmlFor="draft-title">Title *</label>
-                <input id="draft-title" style={fieldStyle} required value={draft.title || ''} onChange={(event) => setDraft({ ...draft, title: event.target.value })} />
-                <label htmlFor="draft-org">Organization</label>
-                <input id="draft-org" style={fieldStyle} value={draft.organization || ''} onChange={(event) => setDraft({ ...draft, organization: event.target.value })} />
-                <label htmlFor="draft-type">Opportunity type</label>
-                <select id="draft-type" style={fieldStyle} value={draft.opportunity_type || 'other'} onChange={(event) => setDraft({ ...draft, opportunity_type: event.target.value })}>
-                  {['Internship', 'Scholarship', 'Job', 'Fellowship', 'Competition', 'Other'].map((type) => <option key={type} value={type.toLowerCase()}>{type}</option>)}
-                </select>
-                <label htmlFor="draft-deadline">Deadline</label>
-                <input id="draft-deadline" style={fieldStyle} type="date" value={draft.deadline || ''} onChange={(event) => setDraft({ ...draft, deadline: event.target.value })} />
-                <label htmlFor="draft-description">Description</label>
-                <textarea id="draft-description" style={{ ...fieldStyle, resize: 'vertical' }} rows={3} value={draft.description || ''} onChange={(event) => setDraft({ ...draft, description: event.target.value })} />
-                <label htmlFor="draft-eligibility">Eligibility</label>
-                <textarea id="draft-eligibility" style={{ ...fieldStyle, resize: 'vertical' }} rows={2} value={draft.eligibility || ''} onChange={(event) => setDraft({ ...draft, eligibility: event.target.value })} />
-                <label htmlFor="draft-source-url">Source URL</label>
-                <input id="draft-source-url" style={fieldStyle} type="url" value={draft.source_url || ''} onChange={(event) => setDraft({ ...draft, source_url: event.target.value })} />
-                <label htmlFor="draft-application-url">Application URL</label>
-                <input id="draft-application-url" style={fieldStyle} type="url" value={draft.application_url || ''} onChange={(event) => setDraft({ ...draft, application_url: event.target.value })} />
-                <label htmlFor="draft-location">Location</label>
-                <input id="draft-location" style={fieldStyle} value={draft.location || ''} onChange={(event) => setDraft({ ...draft, location: event.target.value })} />
-                <label htmlFor="draft-benefits">Benefits</label>
-                <textarea id="draft-benefits" style={{ ...fieldStyle, resize: 'vertical' }} rows={3} value={draft.benefits || ''} onChange={(event) => setDraft({ ...draft, benefits: event.target.value })} />
-                <label htmlFor="draft-documents">Required documents (one per line)</label>
-                <textarea id="draft-documents" style={{ ...fieldStyle, resize: 'vertical' }} rows={3} placeholder={'CV\nMotivation letter\nAcademic transcript'} value={(draft.required_documents || []).join('\n')} onChange={(event) => setDraft({ ...draft, required_documents: event.target.value.split('\n').map((document) => document.trim()).filter(Boolean) })} />
-                <label htmlFor="draft-status">Application status</label>
-                <select id="draft-status" style={fieldStyle} value={draft.status || 'saved'} onChange={(event) => setDraft({ ...draft, status: event.target.value })}>
-                  {STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </select>
-                <label htmlFor="draft-notes">Personal notes</label>
-                <textarea id="draft-notes" style={{ ...fieldStyle, resize: 'vertical' }} rows={3} placeholder="What do you need to prepare or remember?" value={draft.notes || ''} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} />
-                {extractError && <p role="alert" style={{ color: '#b83d2a' }}>{extractError}</p>}
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                  <button type="button" className="secondary-button" onClick={() => { if (editingOpportunityId !== null) { closeOpportunityForm() } else { setDraft(null); setExtractError('') } }} disabled={saving}>{editingOpportunityId !== null ? 'Cancel' : 'Back'}</button>
-                  <button type="submit" className="primary-button" disabled={saving}>
-                    {saving ? <LoaderCircle size={18} className="spin" /> : <Check size={18} />}
-                    {saving ? 'Saving...' : editingOpportunityId !== null ? 'Save changes' : 'Save opportunity'}
-                  </button>
-                </div>
-              </form>
-            )}
-          </section>
-        </div>
-      )}
-      {selectedOpportunity && (
-        <div style={modalBackdropStyle} onMouseDown={() => setSelectedOpportunity(null)}>
-          <section style={modalStyle} role="dialog" aria-modal="true" aria-labelledby="details-title" onMouseDown={(event) => event.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
-              <div>
-                <div className="eyebrow"><Bookmark size={15} /> OPPORTUNITY DETAILS</div>
-                <h2 id="details-title" style={{ marginBottom: 6 }}>{selectedOpportunity.title}</h2>
-                <p style={{ marginTop: 0 }}>{selectedOpportunity.organization || 'Organization not specified'}</p>
-              </div>
-              <button className="icon-button" aria-label="Close details" onClick={() => setSelectedOpportunity(null)}><X size={19} /></button>
-            </div>
-            {[
-              ['Type', getType(selectedOpportunity)],
-              ['Deadline', formatDeadline(selectedOpportunity.deadline)],
-              ['Location', selectedOpportunity.location || 'Not specified'],
-              ['Description', selectedOpportunity.description || 'Not specified'],
-              ['Eligibility', selectedOpportunity.eligibility || 'Not specified'],
-              ['Benefits', selectedOpportunity.benefits || 'Not specified'],
-              [
-                'Required documents',
-                Array.isArray(selectedOpportunity.required_documents) &&
-                selectedOpportunity.required_documents.length > 0
-                  ? selectedOpportunity.required_documents.join(', ')
-                  : 'Not specified',
-              ],
-            ].map(([label, value]) => (
-              <div key={label} style={{ padding: '12px 0', borderBottom: '1px solid #e0eeeb' }}>
-                <strong style={{ display: 'block', marginBottom: 5 }}>{label}</strong>
-                <span>{value}</span>
-              </div>
-            ))}
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 20, flexWrap: 'wrap' }}>
-              <button className="secondary-button" onClick={() => setSelectedOpportunity(null)}>Close</button>
-              <button type="button" className="secondary-button" onClick={() => openEditModal(selectedOpportunity)}><Pencil size={16} /> Edit opportunity</button>
-              {(selectedOpportunity.application_url || selectedOpportunity.source_url) && (
-                <a className="primary-button" href={selectedOpportunity.application_url || selectedOpportunity.source_url} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-                  Open opportunity <ExternalLink size={17} />
-                </a>
-              )}
-            </div>
-          </section>
-        </div>
-      )}
+      <OpportunityModals
+        showAddModal={showAddModal}
+        setShowAddModal={setShowAddModal}
+        sourceUrl={sourceUrl}
+        setSourceUrl={setSourceUrl}
+        pastedText={pastedText}
+        setPastedText={setPastedText}
+        draft={draft}
+        setDraft={setDraft}
+        extracting={extracting}
+        saving={saving}
+        extractError={extractError}
+        setExtractError={setExtractError}
+        editingOpportunityId={editingOpportunityId}
+        handleExtract={handleExtract}
+        handleSave={handleSave}
+        closeOpportunityForm={closeOpportunityForm}
+        selectedOpportunity={selectedOpportunity}
+        setSelectedOpportunity={setSelectedOpportunity}
+        openEditModal={openEditModal}
+        STATUS_OPTIONS={STATUS_OPTIONS}
+        getType={getType}
+        formatDeadline={formatDeadline}
+      />
     </div>
   )
 }
