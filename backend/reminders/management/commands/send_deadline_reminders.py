@@ -5,8 +5,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from reminders.models import EmailReminderPreference, ReminderDelivery
-from reminders.resend import send_email
-
+from opportunities.services.brevo_email import send_brevo_email
 TERMINAL = {"submitted","accepted","rejected","expired"}
 class Command(BaseCommand):
     help = "Send Opportune deadline reminders using Resend."
@@ -34,7 +33,7 @@ class Command(BaseCommand):
                 url = getattr(item,"application_url","") or getattr(item,"source_url","") or ""
                 link = f'<p><a href="{html.escape(url,quote=True)}">View opportunity</a></p>' if url.startswith(("https://","http://")) else ""
                 try:
-                    email_id = send_email(email, f"Opportune reminder: {title} deadline in {days} day(s)", f"<h2>Your opportunity is getting closer ✨</h2><p><b>{title}</b></p><p>{org}</p><p>Deadline: <b>{deadline:%d %b %Y}</b></p><p>This opportunity is due in {days} day(s).</p>{link}")
+                    email_id = send_brevo_email(email, f"Opportune reminder: {title} deadline in {days} day(s)", f"<h2>Your opportunity is getting closer ✨</h2><p><b>{title}</b></p><p>{org}</p><p>Deadline: <b>{deadline:%d %b %Y}</b></p><p>This opportunity is due in {days} day(s).</p>{link}")
                     ReminderDelivery.objects.create(user=pref.user, opportunity_id=item.pk, days_before=days, deadline_date=deadline, resend_email_id=email_id)
                     sent += 1
                 except Exception as exc:
