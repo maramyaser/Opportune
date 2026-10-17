@@ -314,7 +314,7 @@ export default function Auth({ onAuthenticated }) {
           ) : (
             <>
               <label htmlFor="auth-username">
-                Username
+                     {isRegister || isRecover ? 'Username' : 'Username or email'}
               </label>
 
               <input
@@ -327,7 +327,9 @@ export default function Auth({ onAuthenticated }) {
                 placeholder={
                   isRegister
                     ? 'Choose your username'
-                    : 'Enter your username'
+                     : isRecover
+                          ? 'Enter your username'
+                          : 'Enter your username or email'
                 }
                 required
                 minLength={2}

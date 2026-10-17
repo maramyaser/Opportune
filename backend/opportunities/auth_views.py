@@ -3,7 +3,6 @@ from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .auth_serializers import RegisterSerializer
 from django.contrib.auth import get_user_model
 
 from rest_framework import generics, serializers, status
@@ -17,6 +16,10 @@ from .auth_serializers import RegisterSerializer
 from .services.email_verification import verify_email_code
 from rest_framework.throttling import AnonRateThrottle
 from .services.email_verification import send_verification_code
+from .auth_serializers import (
+    RegisterSerializer,
+    UsernameOrEmailTokenSerializer,
+)
 
 
 User = get_user_model()
@@ -29,6 +32,7 @@ class RegisterView(generics.CreateAPIView):
 
 class LoginView(TokenObtainPairView):
     permission_classes = [AllowAny]
+    serializer_class = UsernameOrEmailTokenSerializer
 
 
 class VerifyEmailSerializer(serializers.Serializer):
