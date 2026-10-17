@@ -223,3 +223,35 @@ export async function resendVerificationCode(username, email) {
   return response.data
 }
 
+
+export async function getReminderPreferences() {
+  const response = await api.get('/reminders/preferences/')
+  return response.data
+}
+
+export async function updateReminderPreferences(data) {
+  const response = await api.patch('/reminders/preferences/', data)
+  return response.data
+}
+
+export async function requestReminderVerification(email) {
+  const response = await api.post(
+    '/reminders/request-verification/',
+    { email }
+  )
+  return response.data
+}
+
+export async function verifyReminderEmail(email, code) {
+  const response = await api.post('/reminders/verify/', {
+    email,
+    code,
+  })
+  return response.data
+}
+
+export async function disconnectReminderEmail() {
+  const response = await api.post('/reminders/disconnect/')
+  return response.data
+}
+

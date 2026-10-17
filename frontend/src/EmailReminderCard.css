@@ -1,1 +1,197 @@
 .email-reminder-overlay{position:fixed;inset:0;z-index:1200;background:rgba(26,65,65,.52);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}.email-reminder-modal{position:relative;width:min(520px,100%);max-height:92vh;overflow:auto;background:#fffdf7;border:2px solid #245d5d;border-radius:24px;padding:28px;color:#245d5d;box-shadow:8px 8px 0 #245d5d}.email-reminder-close{position:absolute;right:15px;top:15px;border:0;background:transparent;color:inherit;cursor:pointer;padding:7px}.email-reminder-heading-icon{width:48px;height:48px;border-radius:15px;background:#d9efea;display:grid;place-items:center;margin-bottom:12px}.email-reminder-eyebrow{font-size:11px;letter-spacing:1.3px;font-weight:800;margin:0 0 7px}.email-reminder-modal h2{font-size:clamp(22px,4vw,28px);line-height:1.2;margin:0 32px 8px 0}.email-reminder-copy{color:#527777;margin:0 0 18px;line-height:1.5}.email-reminder-account{display:flex;align-items:center;gap:12px;background:#f1f7f3;border:1px solid #c8ded7;border-radius:14px;padding:13px;margin:16px 0 20px}.email-reminder-account>div{display:grid;gap:4px;min-width:0;flex:1;overflow-wrap:anywhere}.email-reminder-account span{font-size:12px;color:#527777}.email-reminder-modal h3{font-size:15px;margin:16px 0 10px}.email-reminder-days{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:16px}.email-reminder-days label{border:1.5px solid #c8ded7;border-radius:12px;padding:11px 8px;display:flex;gap:7px;align-items:center;justify-content:center;font-size:12px;cursor:pointer}.email-reminder-days label.selected{background:#e1f3ec;border-color:#245d5d}.email-reminder-days input{accent-color:#245d5d}.email-reminder-primary,.email-reminder-secondary,.email-reminder-danger{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:12px 14px;font:inherit;font-weight:750;cursor:pointer;margin-top:9px}.email-reminder-primary{background:#245d5d;color:white;border:2px solid #245d5d}.email-reminder-secondary{background:white;border:1.5px solid #245d5d;color:#245d5d}.email-reminder-danger{background:transparent;border:1px solid #d8a7a0;color:#a33f36;font-size:13px}.email-reminder-primary:disabled,.email-reminder-secondary:disabled,.email-reminder-danger:disabled{opacity:.55;cursor:not-allowed}.email-reminder-message,.email-reminder-error{padding:10px 12px;border-radius:10px;font-size:13px;line-height:1.4}.email-reminder-message{background:#e4f5e8;color:#245d5d}.email-reminder-error{background:#fff0ed;color:#9d352c}.email-reminder-footnote{font-size:11px;line-height:1.5;color:#6a8581;margin:16px 0 0}@media(max-width:420px){.email-reminder-modal{padding:22px 18px}.email-reminder-days{grid-template-columns:1fr}.email-reminder-days label{justify-content:flex-start}}
+
+/* Email selection */
+
+.email-reminder-choices {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 18px;
+}
+
+.email-reminder-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  border: 1.5px solid #c8ded7;
+  border-radius: 14px;
+  background: #fffdf7;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.email-reminder-choice.selected {
+  background: #e1f3ec;
+  border-color: #359fa0;
+}
+
+.email-reminder-choice input {
+  accent-color: #359fa0;
+  flex-shrink: 0;
+}
+
+.email-reminder-choice > div {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.email-reminder-choice strong {
+  font-size: 14px;
+  color: #245d5d;
+}
+
+.email-reminder-choice span,
+.email-reminder-choice small {
+  font-size: 12px;
+  color: #527777;
+}
+
+.email-reminder-choice small {
+  color: #359fa0;
+  font-weight: 700;
+}
+
+.email-reminder-field {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.email-reminder-field label,
+.email-reminder-verification label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.email-reminder-field input,
+.email-reminder-code-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px;
+  border: 1.5px solid #c8ded7;
+  border-radius: 12px;
+  background: white;
+  color: #245d5d;
+  font: inherit;
+}
+
+.email-reminder-field input:focus,
+.email-reminder-code-input:focus {
+  outline: 2px solid #8ad6d1;
+  border-color: #359fa0;
+}
+
+/* Six-digit verification */
+
+.email-reminder-verification {
+  margin-top: 18px;
+  padding: 16px;
+  background: #fff0c5;
+  border: 1.5px solid #e3d6ad;
+  border-radius: 16px;
+}
+
+.email-reminder-verification-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #245d5d;
+}
+
+.email-reminder-verification p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #527777;
+}
+
+.email-reminder-code-input {
+  margin-top: 9px;
+  text-align: center;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: 8px;
+}
+
+.email-reminder-small-note {
+  text-align: center;
+  font-size: 11px !important;
+}
+
+.email-reminder-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 12px auto 0;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: #359fa0;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Verified status */
+
+.email-reminder-verified {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+  padding: 12px;
+  background: #e1f3ec;
+  border: 1px solid #8ad6d1;
+  border-radius: 12px;
+  color: #245d5d;
+}
+
+.email-reminder-verified > div {
+  display: grid;
+  gap: 4px;
+}
+
+.email-reminder-verified strong {
+  font-size: 14px;
+}
+
+.email-reminder-verified span {
+  font-size: 12px;
+  color: #527777;
+}
+
+.email-reminder-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 25px;
+  color: #359fa0;
+}
+
+.email-reminder-spin {
+  animation: email-reminder-rotate 1s linear infinite;
+}
+
+@keyframes email-reminder-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 420px) {
+  .email-reminder-choice {
+    padding: 12px;
+  }
+
+  .email-reminder-code-input {
+    letter-spacing: 5px;
+    font-size: 22px;
+  }
+
+  .email-reminder-verification {
+    padding: 12px;
+  }
+}
