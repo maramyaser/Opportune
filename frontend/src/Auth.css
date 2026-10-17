@@ -193,3 +193,94 @@
   .auth-decoration-one { left: 2%; top: 2%; font-size: 48px; }
   .auth-decoration-two { right: 2%; bottom: 2%; font-size: 48px; }
 }
+
+
+/* Email verification */
+
+.auth-verification-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  background: #fff0c5;
+  border: 2px solid #359fa0;
+  border-radius: 18px;
+  text-align: center;
+}
+
+.auth-verification-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #8ad6d1;
+  color: #176f70;
+}
+
+.auth-verification-info p {
+  margin: 0;
+  color: #556768;
+  font-size: 13px;
+}
+
+.auth-verification-info strong {
+  color: #176f70;
+  overflow-wrap: anywhere;
+}
+
+.auth-verification-info span {
+  font-size: 12px;
+  color: #657273;
+}
+
+.auth-code-input {
+  text-align: center;
+  font-size: 28px !important;
+  font-weight: 800;
+  letter-spacing: 10px;
+  padding-left: 20px !important;
+}
+
+.auth-code-hint {
+  margin: 0;
+  color: #657273;
+  text-align: center;
+  font-size: 12px;
+}
+
+.auth-verification-bottom {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.auth-verification-bottom p {
+  color: #657273;
+  font-size: 13px;
+}
+
+.auth-back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: #359fa0;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-back-button:hover {
+  text-decoration: underline;
+}
+
+.auth-message.auth-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

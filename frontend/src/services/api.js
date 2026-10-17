@@ -199,3 +199,15 @@ export const disconnectEmailReminders = async () => {
 
 // Export the configured Axios instance for other API calls.
 export default api
+
+
+export async function verifyEmail(username, email, code) {
+  const response = await api.post('/auth/verify-email/', {
+    username,
+    email,
+    code,
+  })
+
+  return response.data
+}
+
