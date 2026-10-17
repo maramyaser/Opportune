@@ -284,3 +284,67 @@
   align-items: center;
   gap: 8px;
 }
+
+/* Resend verification code */
+
+.auth-resend-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  padding: 13px 18px;
+  margin: 8px 0;
+  background: #fff0c5;
+  color: #176f70;
+  border: 2px solid #8ad6d1;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.auth-resend-button:hover:not(:disabled) {
+  background: #8ad6d1;
+  transform: translateY(-1px);
+}
+
+.auth-resend-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-resend-note {
+  color: #777;
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 8px 0 15px;
+}
+
+/* Recover an unverified account */
+
+.auth-recovery-prompt {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.auth-recovery-prompt button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: #359fa0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-recovery-prompt button:hover {
+  text-decoration: underline;
+}
