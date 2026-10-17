@@ -211,3 +211,15 @@ export async function verifyEmail(username, email, code) {
   return response.data
 }
 
+export async function resendVerificationCode(username, email) {
+  const response = await api.post(
+    '/auth/resend-verification/',
+    {
+      username,
+      email,
+    }
+  )
+
+  return response.data
+}
+

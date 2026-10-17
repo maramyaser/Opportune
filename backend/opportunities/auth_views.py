@@ -15,6 +15,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .auth_serializers import RegisterSerializer
 from .services.email_verification import verify_email_code
+from rest_framework.throttling import AnonRateThrottle
+from .services.email_verification import send_verification_code
 
 
 User = get_user_model()
@@ -73,3 +75,60 @@ class VerifyEmailView(APIView):
             )
 
         return Response(result, status=status.HTTP_200_OK)
+
+class VerificationResendThrottle(AnonRateThrottle):
+    rate = "5/hour"
+
+
+class ResendVerificationCodeView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [VerificationResendThrottle]
+
+    def post(self, request):
+        serializer = VerifyEmailSerializer(
+            data={
+                "username": request.data.get("username"),
+                "email": request.data.get("email"),
+                "code": "000000",
+            }
+        )
+        serializer.is_valid(raise_exception=True)
+
+        username = serializer.validated_data["username"]
+        email = serializer.validated_data["email"].strip().lower()
+
+        # Don't reveal whether an account exists.
+        generic_response = {
+            "message": (
+                "If this account needs verification, "
+                "a new code will be sent when allowed."
+            )
+        }
+
+        user = User.objects.filter(
+            username=username,
+            email__iexact=email,
+            is_active=False,
+        ).first()
+
+        if user is None:
+            return Response(
+                generic_response,
+                status=status.HTTP_200_OK,
+            )
+
+        try:
+            send_verification_code(
+                user=user,
+                email=user.email,
+                purpose="account",
+            )
+        except ValueError:
+            # Includes the existing 60-second resend cooldown.
+            pass
+
+        return Response(
+            generic_response,
+            status=status.HTTP_200_OK,
+        )

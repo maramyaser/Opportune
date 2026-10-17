@@ -7,6 +7,7 @@ from .views import OpportunityViewSet
 from .auth_views import RegisterView, LoginView
 from .views import OpportunityExtractView
 from opportunities.auth_views import VerifyEmailView
+from opportunities.auth_views import ResendVerificationCodeView
 
 router = DefaultRouter()
 router.register(
@@ -32,6 +33,11 @@ urlpatterns = [
         "auth/verify-email/",
          VerifyEmailView.as_view(),
         name="verify-email",
+    ),
+    path(
+        "auth/resend-verification/",
+        ResendVerificationCodeView.as_view(),
+        name="resend-verification",
     ),
 ] + router.urls
 
