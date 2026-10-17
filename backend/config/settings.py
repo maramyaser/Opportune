@@ -15,6 +15,7 @@ from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
 import dj_database_url
+from urllib.parse import urlparse, parse_qsl
 
 
 
@@ -41,6 +42,26 @@ ALLOWED_HOSTS = [
     ).split(",")
     if host.strip()
 ]
+
+
+# Automatically recognize Render's assigned hostname.
+RENDER_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+
+if RENDER_HOSTNAME and RENDER_HOSTNAME not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_HOSTNAME)
+
+# Render terminates HTTPS before forwarding requests to Django.
+SECURE_PROXY_SSL_HEADER = (
+    "HTTP_X_FORWARDED_PROTO",
+    "https",
+)
+
+# Redirect HTTP requests to HTTPS in production.
+SECURE_SSL_REDIRECT = not DEBUG
+
+# Protect browser cookies in production.
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 
 
@@ -219,10 +240,26 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
+
+# Allowed React frontend origins.
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
+    origin.strip().rstrip("/")
+    for origin in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",")
+    if origin.strip()
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip().rstrip("/")
+    for origin in os.getenv(
+        "CSRF_TRUSTED_ORIGINS",
+        "",
+    ).split(",")
+    if origin.strip()
+]
+
 
 # Opportune email reminders
 BACKEND_PUBLIC_URL = os.environ.get(
