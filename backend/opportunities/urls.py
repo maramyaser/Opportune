@@ -6,6 +6,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import OpportunityViewSet
 from .auth_views import RegisterView, LoginView
 from .views import OpportunityExtractView
+from opportunities.auth_views import VerifyEmailView
 
 router = DefaultRouter()
 router.register(
@@ -26,6 +27,11 @@ urlpatterns = [
         "opportunities/extract/",
          OpportunityExtractView.as_view(),
          name="opportunity-extract",
+    ),
+    path(
+        "auth/verify-email/",
+         VerifyEmailView.as_view(),
+        name="verify-email",
     ),
 ] + router.urls
 

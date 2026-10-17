@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     'opportunities',
     'rest_framework.authtoken',
     'support',
+    'reminders',
 ]
 
 class LogAuthorizationHeaderMiddleware:
@@ -172,3 +174,19 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+
+# Opportune email reminders
+BACKEND_PUBLIC_URL = os.environ.get(
+    "BACKEND_PUBLIC_URL",
+    "http://127.0.0.1:8000",
+)
+
+
+OPPORTUNITY_MODEL = "opportunities.Opportunity"
+
+
+BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    "notifications@opportune.site",
+)

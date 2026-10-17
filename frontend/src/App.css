@@ -1750,3 +1750,48 @@ p {
     transition: none;
   }
 }
+.email-reminder-cta {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 12px;
+  margin: 10px 0 14px;
+  border: 1.5px solid #b8d9d0;
+  border-radius: 15px;
+  background: #eff8f2;
+  color: #245d5d;
+  cursor: pointer;
+}
+
+.email-reminder-cta-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: #d8eee5;
+}
+
+.email-reminder-cta > span:nth-child(2) {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+}
+
+.email-reminder-cta strong {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.email-reminder-cta small {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #527777;
+}
+
+.email-reminder-cta:focus-visible {
+  outline: 3px solid #d88b45;
+  outline-offset: 3px;
+}

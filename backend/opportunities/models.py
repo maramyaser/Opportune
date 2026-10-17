@@ -83,6 +83,54 @@ class Opportunity(models.Model):
         return f"{self.title} — {self.user}"
 
 
+from datetime import timedelta
+
+from django.conf import settings
+from django.db import models
+from django.utils import timezone
+
+
+class EmailVerificationCode(models.Model):
+    PURPOSE_CHOICES = [
+        ("account", "Account Verification"),
+        ("reminder", "Reminder Email Verification"),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="email_verification_codes",
+    )
+
+    email = models.EmailField()
+
+    purpose = models.CharField(
+        max_length=20,
+        choices=PURPOSE_CHOICES,
+        default="account",
+    )
+
+    code_hash = models.CharField(max_length=128)
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    expires_at = models.DateTimeField()
+
+    is_used = models.BooleanField(default=False)
+
+    attempts = models.PositiveSmallIntegerField(
+        default=0
+    )
+
+    def is_expired(self):
+        return timezone.now() >= self.expires_at
+
+    def __str__(self):
+        return f"{self.email} - {self.purpose}"
+
+
 
 """ user ensures every opportunity belongs to its owner.
 
