@@ -11,7 +11,7 @@ from reminders.models import (
     ReminderDelivery,
 )
 from opportunities.services.brevo_email import send_brevo_email
-from django.core.management.base import BaseCommand, CommandError
+
 
 TERMINAL_STATUSES = {
     "submitted",
@@ -21,6 +21,7 @@ TERMINAL_STATUSES = {
 }
 
 DEFAULT_DAYS = [7, 3, 1]
+ALLOWED_DAYS = {7, 3, 1}
 
 
 class Command(BaseCommand):
@@ -36,22 +37,23 @@ class Command(BaseCommand):
         parser.add_argument(
             "--user-id",
             type=int,
-            help="Only process reminders for one user.",
+            help="Process only one user's reminders.",
         )
 
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
         user_id = options["user_id"]
 
-        opportunity_model = getattr(
-            settings,
-            "OPPORTUNITY_MODEL",
-            "opportunities.Opportunity",
+        Opportunity = apps.get_model(
+            getattr(
+                settings,
+                "OPPORTUNITY_MODEL",
+                "opportunities.Opportunity",
+            )
         )
 
-        Opportunity = apps.get_model(opportunity_model)
-
-        today = timezone.localdate()
+        now = timezone.now()
+        today = timezone.localdate(now)
 
         preferences = EmailReminderPreference.objects.filter(
             reminders_enabled=True,
@@ -59,14 +61,12 @@ class Command(BaseCommand):
         ).select_related("user")
 
         if user_id is not None:
-            preferences = preferences.filter(
-                user_id=user_id
-            )
+            preferences = preferences.filter(user_id=user_id)
 
         sent = 0
+        pending = 0
         skipped = 0
         failed = 0
-        pending = 0
 
         for pref in preferences:
             email = (pref.reminder_email or "").strip()
@@ -75,42 +75,65 @@ class Command(BaseCommand):
                 skipped += 1
                 continue
 
-            reminder_days = (
+            configured_days = (
                 pref.reminder_days
                 if pref.reminder_days is not None
                 else DEFAULT_DAYS
             )
 
-            if not reminder_days:
+            days = sorted({
+                day
+                for day in configured_days
+                if type(day) is int and day in ALLOWED_DAYS
+            })
+
+            if not days:
                 continue
 
             opportunities = Opportunity.objects.filter(
                 user=pref.user,
-                deadline__isnull=False,
+                deadline__gt=now,
+            ).exclude(
+                status__in=TERMINAL_STATUSES,
             )
 
-            for opportunity in opportunities.iterator():
-                if opportunity.status in TERMINAL_STATUSES:
-                    continue
+            for item in opportunities.iterator():
+                deadline_date = timezone.localtime(
+                    item.deadline
+                ).date()
 
-                deadline = opportunity.deadline
-
-                if timezone.is_aware(deadline):
-                    deadline = timezone.localtime(deadline)
-
-                deadline_date = deadline.date()
-
-                days_before = (
+                days_remaining = (
                     deadline_date - today
                 ).days
 
-                if days_before not in reminder_days:
+                # Ignore deadlines that are too far away.
+                if (
+                    days_remaining < 0
+                    or days_remaining > max(days)
+                ):
                     continue
 
+                # Select the currently applicable reminder stage.
+                # Example:
+                # 6 days remaining => 7-day reminder stage
+                # 2 days remaining => 3-day reminder stage
+                # 0 days remaining => 1-day reminder stage
+                eligible_stages = [
+                    day
+                    for day in days
+                    if day >= days_remaining
+                ]
+
+                if not eligible_stages:
+                    continue
+
+                stage = min(eligible_stages)
+
+                # We only send each stage once.
                 already_sent = ReminderDelivery.objects.filter(
                     user=pref.user,
-                    opportunity_id=opportunity.pk,
-                    days_before=days_before,
+                    opportunity_id=item.pk,
+                    days_before=stage,
                     deadline_date=deadline_date,
                 ).exists()
 
@@ -118,27 +141,33 @@ class Command(BaseCommand):
                     skipped += 1
                     continue
 
-                title = html.escape(opportunity.title)
+                if days_remaining == 0:
+                    timing = "today"
+                    subject_timing = "deadline is today"
+                elif days_remaining == 1:
+                    timing = "in 1 day"
+                    subject_timing = "deadline in 1 day"
+                else:
+                    timing = f"in {days_remaining} days"
+                    subject_timing = (
+                        f"deadline in {days_remaining} days"
+                    )
 
-                organization = html.escape(
-                    opportunity.organization or ""
+                safe_title = html.escape(item.title)
+                safe_organization = html.escape(
+                    item.organization or ""
                 )
 
-                application_url = (
-                    opportunity.application_url
-                    or opportunity.source_url
+                url = (
+                    item.application_url
+                    or item.source_url
                     or ""
                 )
 
                 link_html = ""
 
-                if application_url.startswith(
-                    ("https://", "http://")
-                ):
-                    safe_url = html.escape(
-                        application_url,
-                        quote=True,
-                    )
+                if url.startswith(("https://", "http://")):
+                    safe_url = html.escape(url, quote=True)
 
                     link_html = (
                         f'<p><a href="{safe_url}">'
@@ -148,45 +177,38 @@ class Command(BaseCommand):
 
                 subject = (
                     f"Opportune reminder: "
-                    f"{opportunity.title} "
-                    f"deadline in {days_before} day(s)"
+                    f"{item.title} — {subject_timing}"
                 )
 
                 html_content = f"""
                 <div style="
-                    font-family:Arial,sans-serif;
-                    max-width:540px;
-                    margin:auto;
-                    padding:24px;
+                    font-family: Arial, sans-serif;
+                    max-width: 540px;
+                    margin: auto;
+                    padding: 24px;
                 ">
                     <h2 style="color:#359FA0;">
                         Opportune ✦
                     </h2>
 
-                    <h3>
-                        Your opportunity is getting closer!
-                    </h3>
+                    <p>Your opportunity is getting closer!</p>
 
                     <div style="
                         background:#FFF0C5;
-                        padding:20px;
                         border-radius:14px;
+                        padding:20px;
                     ">
-                        <h3>{title}</h3>
-
-                        <p>{organization}</p>
-
+                        <h3>{safe_title}</h3>
+                        <p>{safe_organization}</p>
                         <p>
                             Deadline:
                             <strong>
                                 {deadline_date:%d %b %Y}
                             </strong>
                         </p>
-
                         <p>
-                            <strong>
-                                {days_before} day(s) left!
-                            </strong>
+                            Your deadline is
+                            <strong>{timing}</strong>.
                         </p>
                     </div>
 
@@ -203,20 +225,21 @@ class Command(BaseCommand):
                     self.stdout.write(
                         "[DRY RUN] "
                         f"User {pref.user_id} | "
-                        f"Opportunity {opportunity.pk} | "
-                        f"{days_before} day(s) before"
+                        f"Opportunity {item.pk} | "
+                        f"{days_remaining} days remaining | "
+                        f"Stage {stage}"
                     )
                     pending += 1
                     continue
 
                 try:
-                    result = send_brevo_email(
+                    response = send_brevo_email(
                         to_email=email,
                         subject=subject,
                         html_content=html_content,
                     )
 
-                    message_id = result.get("messageId")
+                    message_id = response.get("messageId")
 
                     if not message_id:
                         raise ValueError(
@@ -225,8 +248,8 @@ class Command(BaseCommand):
 
                     ReminderDelivery.objects.create(
                         user=pref.user,
-                        opportunity_id=opportunity.pk,
-                        days_before=days_before,
+                        opportunity_id=item.pk,
+                        days_before=stage,
                         deadline_date=deadline_date,
                         resend_email_id=message_id,
                     )
@@ -235,30 +258,31 @@ class Command(BaseCommand):
 
                     self.stdout.write(
                         self.style.SUCCESS(
-                            f"Sent reminder for "
-                            f"opportunity {opportunity.pk}"
+                            f"Sent opportunity {item.pk} "
+                            f"to user {pref.user_id}, "
+                            f"stage {stage}"
                         )
                     )
-                    if failed:
-                     raise CommandError(
-                           f"{failed} reminder email(s) failed."
-                     )
+
                 except Exception as exc:
                     failed += 1
 
                     self.stderr.write(
                         self.style.ERROR(
-                            f"Opportunity "
-                            f"{opportunity.pk}: {exc}"
+                            f"Opportunity {item.pk}: {exc}"
                         )
                     )
 
         self.stdout.write(
             self.style.SUCCESS(
-                "Reminders complete. "
-                f"Sent: {sent}, "
+                f"Reminders complete. Sent: {sent}, "
                 f"Pending: {pending}, "
                 f"Skipped: {skipped}, "
                 f"Failed: {failed}."
             )
         )
+
+        if failed:
+            raise CommandError(
+                f"{failed} reminder(s) failed."
+            )
