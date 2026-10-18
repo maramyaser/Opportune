@@ -241,6 +241,9 @@ REST_FRAMEWORK = {
         "resend_ip": "5/hour",
         "reminder_request_ip": "10/hour",
         "reminder_verify_ip": "20/hour",
+        "password_reset_ip": "5/hour",
+        "password_reset_email": "3/hour",
+        "password_reset_confirm": "20/hour",
     },
 
 }
@@ -308,3 +311,12 @@ CACHES = {
         },
     },
 }
+
+
+# Password reset
+PASSWORD_RESET_TIMEOUT = 30 * 60  # 30 minutes
+
+FRONTEND_URL = os.getenv(
+    "FRONTEND_URL",
+    "http://localhost:5173",
+).rstrip("/")

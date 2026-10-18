@@ -9,6 +9,11 @@ from .views import OpportunityExtractView
 from opportunities.auth_views import VerifyEmailView
 from opportunities.auth_views import ResendVerificationCodeView
 
+from opportunities.password_reset_views import (
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
+)
+
 router = DefaultRouter()
 router.register(
     "opportunities",
@@ -39,6 +44,18 @@ urlpatterns = [
         ResendVerificationCodeView.as_view(),
         name="resend-verification",
     ),
+    
+    path(
+       "auth/password-reset/request/",
+        PasswordResetRequestView.as_view(),
+        name="password-reset-request",
+    ),
+    path(
+        "auth/password-reset/confirm/",
+         PasswordResetConfirmView.as_view(),
+        name="password-reset-confirm",
+),
+
 ] + router.urls
 
 

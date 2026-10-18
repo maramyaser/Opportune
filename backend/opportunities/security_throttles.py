@@ -72,3 +72,33 @@ class LoginIdentifierThrottle(SimpleRateThrottle):
             "scope": self.scope,
             "ident": hashed_identifier,
         }
+
+
+class PasswordResetIPThrottle(SharedIPThrottle):
+    scope = "password_reset_ip"
+
+
+class PasswordResetConfirmThrottle(SharedIPThrottle):
+    scope = "password_reset_confirm"
+
+
+class PasswordResetEmailThrottle(SimpleRateThrottle):
+    scope = "password_reset_email"
+    cache = caches["security"]
+
+    def get_cache_key(self, request, view):
+        email = str(
+            request.data.get("email", "")
+        ).strip().casefold()
+
+        if not email:
+            return None
+
+        identifier = hashlib.sha256(
+            email.encode("utf-8")
+        ).hexdigest()
+
+        return self.cache_format % {
+            "scope": self.scope,
+            "ident": identifier,
+        }
