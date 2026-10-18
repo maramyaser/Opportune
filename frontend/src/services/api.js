@@ -255,3 +255,30 @@ export async function disconnectReminderEmail() {
   return response.data
 }
 
+
+export async function requestPasswordReset(email) {
+  const response = await api.post(
+    '/auth/password-reset/request/',
+    { email }
+  )
+
+  return response.data
+}
+
+export async function confirmPasswordReset(
+  uid,
+  token,
+  newPassword
+) {
+  const response = await api.post(
+    '/auth/password-reset/confirm/',
+    {
+      uid,
+      token,
+      new_password: newPassword,
+    }
+  )
+
+  return response.data
+}
+

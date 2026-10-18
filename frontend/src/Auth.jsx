@@ -7,7 +7,9 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  KeyRound,
   LoaderCircle,
+  Mail,
   MailCheck,
   RefreshCw,
   ShieldCheck,
@@ -19,6 +21,7 @@ import {
   register,
   verifyEmail,
   resendVerificationCode,
+  requestPasswordReset,
 } from './services/api'
 
 import './Auth.css'
@@ -46,7 +49,6 @@ export default function Auth({ onAuthenticated }) {
   const [verificationCode, setVerificationCode] = useState('')
 
   const [showPassword, setShowPassword] = useState(false)
-
   const [busy, setBusy] = useState(false)
   const [resending, setResending] = useState(false)
 
@@ -56,8 +58,11 @@ export default function Auth({ onAuthenticated }) {
   const isRegister = mode === 'register'
   const isVerify = mode === 'verify'
   const isRecover = mode === 'recover'
+  const isForgot = mode === 'forgot'
 
   const switchMode = (nextMode) => {
+    if (busy || resending) return
+
     setMode(nextMode)
     setError('')
     setSuccess('')
@@ -73,11 +78,20 @@ export default function Auth({ onAuthenticated }) {
     setError('')
     setSuccess('')
 
-    try {
-      const cleanUsername = username.trim()
-      const cleanEmail = email.trim().toLowerCase()
+    const cleanUsername = username.trim()
+    const cleanEmail = email.trim().toLowerCase()
 
-      // Verify a six-digit email code.
+    try {
+      if (isForgot) {
+        const response = await requestPasswordReset(cleanEmail)
+
+        setSuccess(
+          response?.detail ||
+          'If your account exists, a password reset link will be sent.'
+        )
+        return
+      }
+
       if (isVerify) {
         await verifyEmail(
           cleanUsername,
@@ -90,14 +104,11 @@ export default function Auth({ onAuthenticated }) {
         setMode('login')
 
         setSuccess(
-          'Your email is verified! You can now sign in to Opportune.'
+          'Your email is verified! You can now sign in.'
         )
-
         return
       }
 
-      // Recover registration when the verification
-      // screen was closed before entering the code.
       if (isRecover) {
         await resendVerificationCode(
           cleanUsername,
@@ -108,13 +119,11 @@ export default function Auth({ onAuthenticated }) {
         setMode('verify')
 
         setSuccess(
-          'If your account is awaiting verification, a new code has been requested. Check your inbox and spam folder.'
+          'If your account needs verification, check your inbox for a code.'
         )
-
         return
       }
 
-      // Register new user. Do not log in until verified.
       if (isRegister) {
         await register(
           cleanUsername,
@@ -127,24 +136,24 @@ export default function Auth({ onAuthenticated }) {
         setMode('verify')
 
         setSuccess(
-          'Account created! Check your email for your verification code.'
+          'Account created! We sent a verification code to your email.'
         )
-
         return
       }
 
-      // Normal login.
       await login(cleanUsername, password)
       await onAuthenticated?.()
 
     } catch (err) {
-      const fallback = isVerify
-        ? 'Verification failed. Check your code and try again.'
-        : isRecover
-          ? 'Unable to request a verification code.'
-          : isRegister
-            ? 'Could not create your account.'
-            : 'Sign in failed. Check your credentials.'
+      const fallback = isForgot
+        ? 'Could not request a password reset. Please try again.'
+        : isVerify
+          ? 'Verification failed. Check your code.'
+          : isRecover
+            ? 'Could not request a verification code.'
+            : isRegister
+              ? 'Could not create your account.'
+              : 'Sign in failed. Check your credentials.'
 
       setError(messageFrom(err, fallback))
     } finally {
@@ -168,13 +177,13 @@ export default function Auth({ onAuthenticated }) {
       setVerificationCode('')
 
       setSuccess(
-        'If your account is awaiting verification and another code is allowed, check your inbox for a new code.'
+        'If another code is allowed, check your inbox and spam folder.'
       )
     } catch (err) {
       setError(
         messageFrom(
           err,
-          'Could not request a new code. Please try again later.'
+          'Could not resend your code. Please try again later.'
         )
       )
     } finally {
@@ -182,21 +191,25 @@ export default function Auth({ onAuthenticated }) {
     }
   }
 
-  const heading = isVerify
-    ? <>Check your <span>inbox.</span></>
-    : isRecover
-      ? <>One more <span>little step.</span></>
-      : isRegister
-        ? <>Make room for <span>big dreams.</span></>
-        : <>Welcome to <span>Opportune.</span></>
+  const heading = isForgot
+    ? <>Forgot your <span>password?</span></>
+    : isVerify
+      ? <>Check your <span>inbox.</span></>
+      : isRecover
+        ? <>One more <span>little step.</span></>
+        : isRegister
+          ? <>Make room for <span>big dreams.</span></>
+          : <>Welcome to <span>Opportune.</span></>
 
-  const description = isVerify
-    ? 'Enter the six-digit code sent to your email to unlock your next big adventure.'
-    : isRecover
-      ? "Didn't finish verifying your account? Request another code and pick up where you left off."
-      : isRegister
-        ? 'Create your account and keep your next big opportunities in one happy place.'
-        : 'Track internships, scholarships, jobs and exciting opportunities in one happy place.'
+  const description = isForgot
+    ? "No worries! Enter your registered email and we'll send you a secure link to create a new password."
+    : isVerify
+      ? 'Enter the six-digit code we sent to your email.'
+      : isRecover
+        ? "Didn't finish verifying your account? Request another code and pick up where you left off."
+        : isRegister
+          ? 'Create your account and keep your next big opportunities in one happy place.'
+          : 'Track internships, scholarships, jobs and exciting opportunities in one happy place.'
 
   return (
     <main className="auth-page">
@@ -211,7 +224,9 @@ export default function Auth({ onAuthenticated }) {
       <section className="auth-card">
 
         <div className="auth-brand-mark">
-          {isVerify || isRecover ? (
+          {isForgot ? (
+            <KeyRound size={28} strokeWidth={2.7} />
+          ) : isVerify || isRecover ? (
             <MailCheck size={28} strokeWidth={2.7} />
           ) : (
             <CalendarDays size={28} strokeWidth={2.7} />
@@ -230,7 +245,7 @@ export default function Auth({ onAuthenticated }) {
           {description}
         </p>
 
-        {!isVerify && !isRecover && (
+        {!isVerify && !isRecover && !isForgot && (
           <div
             className="auth-tabs"
             role="tablist"
@@ -265,14 +280,21 @@ export default function Auth({ onAuthenticated }) {
             <div className="auth-verification-icon">
               <ShieldCheck size={26} />
             </div>
-
             <p>Verification code sent to</p>
-
             <strong>{email}</strong>
+            <span>Codes expire after 10 minutes.</span>
+          </div>
+        )}
 
-            <span>
-              Codes expire after 10 minutes.
-            </span>
+        {isForgot && (
+          <div className="auth-forgot-banner">
+            <Mail size={23} />
+            <div>
+              <strong>We'll send you a reset link ✦</strong>
+              <span>
+                The link expires after 30 minutes.
+              </span>
+            </div>
           </div>
         )}
 
@@ -280,7 +302,26 @@ export default function Auth({ onAuthenticated }) {
           className="auth-form"
           onSubmit={handleSubmit}
         >
-          {isVerify ? (
+          {isForgot ? (
+            <>
+              <label htmlFor="auth-forgot-email">
+                Registered email address
+              </label>
+
+              <input
+                id="auth-forgot-email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(event) =>
+                  setEmail(event.target.value)
+                }
+                disabled={busy}
+                required
+              />
+            </>
+          ) : isVerify ? (
             <>
               <label htmlFor="auth-verification-code">
                 Verification code
@@ -294,15 +335,16 @@ export default function Auth({ onAuthenticated }) {
                 autoComplete="one-time-code"
                 pattern="[0-9]{6}"
                 maxLength={6}
-                value={verificationCode}
-                onChange={(event) => {
-                  const value = event.target.value
-                    .replace(/\D/g, '')
-                    .slice(0, 6)
-
-                  setVerificationCode(value)
-                }}
                 placeholder="000000"
+                value={verificationCode}
+                disabled={busy}
+                onChange={(event) =>
+                  setVerificationCode(
+                    event.target.value
+                      .replace(/\D/g, '')
+                      .slice(0, 6)
+                  )
+                }
                 required
                 autoFocus
               />
@@ -314,25 +356,28 @@ export default function Auth({ onAuthenticated }) {
           ) : (
             <>
               <label htmlFor="auth-username">
-                     {isRegister || isRecover ? 'Username' : 'Username or email'}
+                {isRegister || isRecover
+                  ? 'Username'
+                  : 'Username or email'}
               </label>
 
               <input
                 id="auth-username"
                 autoComplete="username"
+                placeholder={
+                  isRegister
+                    ? 'Choose your username'
+                    : isRecover
+                      ? 'Enter your username'
+                      : 'Enter your username or email'
+                }
                 value={username}
                 onChange={(event) =>
                   setUsername(event.target.value)
                 }
-                placeholder={
-                  isRegister
-                    ? 'Choose your username'
-                     : isRecover
-                          ? 'Enter your username'
-                          : 'Enter your username or email'
-                }
-                required
+                disabled={busy}
                 minLength={2}
+                required
               />
 
               {(isRegister || isRecover) && (
@@ -345,11 +390,12 @@ export default function Auth({ onAuthenticated }) {
                     id="auth-email"
                     type="email"
                     autoComplete="email"
+                    placeholder="you@example.com"
                     value={email}
                     onChange={(event) =>
                       setEmail(event.target.value)
                     }
-                    placeholder="you@example.com"
+                    disabled={busy}
                     required
                   />
                 </>
@@ -364,32 +410,37 @@ export default function Auth({ onAuthenticated }) {
                   <div className="auth-password-wrap">
                     <input
                       id="auth-password"
-                      type={showPassword ? 'text' : 'password'}
+                      type={
+                        showPassword
+                          ? 'text'
+                          : 'password'
+                      }
                       autoComplete={
                         isRegister
                           ? 'new-password'
                           : 'current-password'
-                      }
-                      value={password}
-                      onChange={(event) =>
-                        setPassword(event.target.value)
                       }
                       placeholder={
                         isRegister
                           ? 'Create a strong password'
                           : 'Your password'
                       }
-                      required
+                      value={password}
+                      onChange={(event) =>
+                        setPassword(event.target.value)
+                      }
+                      disabled={busy}
                       minLength={
                         isRegister ? 8 : undefined
                       }
+                      required
                     />
 
                     <button
                       type="button"
                       className="auth-show-password"
                       onClick={() =>
-                        setShowPassword((shown) => !shown)
+                        setShowPassword((value) => !value)
                       }
                       aria-label={
                         showPassword
@@ -442,6 +493,8 @@ export default function Auth({ onAuthenticated }) {
                 size={19}
                 className="auth-spin"
               />
+            ) : isForgot ? (
+              <Mail size={19} />
             ) : isVerify ? (
               <ShieldCheck size={19} />
             ) : (
@@ -450,13 +503,15 @@ export default function Auth({ onAuthenticated }) {
 
             {busy
               ? 'Please wait...'
-              : isVerify
-                ? 'Verify my email'
-                : isRecover
-                  ? 'Send me a new code'
-                  : isRegister
-                    ? 'Create my account'
-                    : 'Sign in to Opportune'}
+              : isForgot
+                ? 'Send password reset link'
+                : isVerify
+                  ? 'Verify my email'
+                  : isRecover
+                    ? 'Send me a new code'
+                    : isRegister
+                      ? 'Create my account'
+                      : 'Sign in to Opportune'}
           </button>
         </form>
 
@@ -467,8 +522,8 @@ export default function Auth({ onAuthenticated }) {
             <button
               type="button"
               className="auth-resend-button"
-              onClick={handleResendCode}
               disabled={busy || resending}
+              onClick={handleResendCode}
             >
               {resending ? (
                 <LoaderCircle
@@ -485,29 +540,39 @@ export default function Auth({ onAuthenticated }) {
             </button>
 
             <p className="auth-resend-note">
-              Please allow at least 60 seconds between
-              requests. Check your spam folder too.
+              Wait at least 60 seconds between requests.
+              Check your spam folder too.
             </p>
+          </div>
+        )}
+
+        {!isRegister && !isVerify && !isRecover && !isForgot && (
+          <div className="auth-recovery-prompt">
+            <button
+              type="button"
+              onClick={() => switchMode('forgot')}
+            >
+              <KeyRound size={16} />
+              Forgot password?
+            </button>
 
             <button
               type="button"
-              className="auth-back-button"
-              onClick={() => switchMode('login')}
-              disabled={busy || resending}
+              onClick={() => switchMode('recover')}
             >
-              <ArrowLeft size={16} />
-              Back to sign in
+              <MailCheck size={16} />
+              Haven't verified your email?
             </button>
           </div>
         )}
 
-        {isRecover && (
+        {(isVerify || isRecover || isForgot) && (
           <div className="auth-verification-bottom">
             <button
               type="button"
               className="auth-back-button"
+              disabled={busy || resending}
               onClick={() => switchMode('login')}
-              disabled={busy}
             >
               <ArrowLeft size={16} />
               Back to sign in
@@ -515,45 +580,30 @@ export default function Auth({ onAuthenticated }) {
           </div>
         )}
 
-        {!isVerify && !isRecover && (
-          <>
-            {!isRegister && (
-              <div className="auth-recovery-prompt">
-                <button
-                  type="button"
-                  onClick={() => switchMode('recover')}
-                >
-                  <MailCheck size={16} />
-                  Haven't verified your email?
-                </button>
-              </div>
-            )}
+        {!isVerify && !isRecover && !isForgot && (
+          <p className="auth-switch-copy">
+            {isRegister
+              ? 'Already have an account?'
+              : 'New to Opportune?'}{' '}
 
-            <p className="auth-switch-copy">
+            <button
+              type="button"
+              onClick={() =>
+                switchMode(
+                  isRegister ? 'login' : 'register'
+                )
+              }
+            >
               {isRegister
-                ? 'Already have an account?'
-                : 'New to Opportune?'}{' '}
-
-              <button
-                type="button"
-                onClick={() =>
-                  switchMode(
-                    isRegister ? 'login' : 'register'
-                  )
-                }
-              >
-                {isRegister
-                  ? 'Sign in'
-                  : 'Create an account'}
-              </button>
-            </p>
-          </>
+                ? 'Sign in'
+                : 'Create an account'}
+            </button>
+          </p>
         )}
 
         <div className="auth-footnote">
           MADE WITH ♡ FOR YOUR NEXT BIG THING
         </div>
-
       </section>
     </main>
   )
