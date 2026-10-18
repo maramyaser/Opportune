@@ -8,6 +8,11 @@ from .views import (
     Disconnect,
 )
 
+from .cron_views import (
+    ReminderHealthView,
+    RunScheduledRemindersView,
+)
+
 urlpatterns = [
     path(
         "preferences/",
@@ -28,5 +33,17 @@ urlpatterns = [
         "disconnect/",
         Disconnect.as_view(),
         name="reminder-disconnect",
+    ),
+
+    # Cloud scheduling
+    path(
+        "health/",
+        ReminderHealthView.as_view(),
+        name="reminder-health",
+    ),
+    path(
+        "run-scheduled/",
+        RunScheduledRemindersView.as_view(),
+        name="run-scheduled-reminders",
     ),
 ]

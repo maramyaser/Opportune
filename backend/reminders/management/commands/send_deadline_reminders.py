@@ -11,7 +11,7 @@ from reminders.models import (
     ReminderDelivery,
 )
 from opportunities.services.brevo_email import send_brevo_email
-
+from django.core.management.base import BaseCommand, CommandError
 
 TERMINAL_STATUSES = {
     "submitted",
@@ -239,7 +239,10 @@ class Command(BaseCommand):
                             f"opportunity {opportunity.pk}"
                         )
                     )
-
+                    if failed:
+                     raise CommandError(
+                           f"{failed} reminder email(s) failed."
+                     )
                 except Exception as exc:
                     failed += 1
 
