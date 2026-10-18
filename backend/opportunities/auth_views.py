@@ -21,6 +21,14 @@ from .auth_serializers import (
     UsernameOrEmailTokenSerializer,
 )
 
+from .security_throttles import (
+    LoginIPThrottle,
+    LoginIdentifierThrottle,
+    RegistrationThrottle,
+    EmailVerificationThrottle,
+    ResendVerificationThrottle,
+)
+
 
 User = get_user_model()
 
@@ -28,11 +36,13 @@ User = get_user_model()
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+    throttle_classes = [RegistrationThrottle]
 
 
 class LoginView(TokenObtainPairView):
     permission_classes = [AllowAny]
     serializer_class = UsernameOrEmailTokenSerializer
+    throttle_classes = [LoginIPThrottle, LoginIdentifierThrottle]
 
 
 class VerifyEmailSerializer(serializers.Serializer):
@@ -41,9 +51,11 @@ class VerifyEmailSerializer(serializers.Serializer):
     code = serializers.RegexField(regex=r"^\d{6}$")
 
 
+
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [EmailVerificationThrottle]
 
     def post(self, request):
         serializer = VerifyEmailSerializer(data=request.data)
@@ -88,6 +100,7 @@ class ResendVerificationCodeView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
     throttle_classes = [VerificationResendThrottle]
+    throttle_classes = [ResendVerificationThrottle]
 
     def post(self, request):
         serializer = VerifyEmailSerializer(

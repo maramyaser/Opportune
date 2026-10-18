@@ -177,15 +177,13 @@ def send_verification_code(user, email, purpose="account"):
     }
 
 
-def verify_email_code(
-    user,
-    email,
-    code,
-    purpose="account",
-):
+
+def verify_email_code(user, email, code, purpose="account"):
     """
-    Verify only the newest code for the selected
-    email and purpose.
+    Verify the newest six-digit code.
+
+    Incorrect attempts are saved permanently,
+    even when verification fails.
     """
 
     if purpose not in VALID_PURPOSES:
@@ -195,29 +193,24 @@ def verify_email_code(
     code = str(code).strip()
 
     if not re.fullmatch(r"[0-9]{6}", code):
-        raise ValueError(
-            "Please enter a valid six-digit code."
-        )
+        raise ValueError("Enter a valid six-digit code.")
 
     User = get_user_model()
+    incorrect_code = False
 
     with transaction.atomic():
-
-        locked_user = User.objects.select_for_update().get(
-            pk=user.pk
+        locked_user = (
+            User.objects
+            .select_for_update()
+            .get(pk=user.pk)
         )
 
         if purpose == "account":
-            if email != normalize_email(
-                locked_user.email
-            ):
+            if email != normalize_email(locked_user.email):
                 raise ValueError(
-                    "The verification email does "
-                    "not match your account."
+                    "The email does not match your account."
                 )
 
-        # Always fetch the newest record, including
-        # used records, to prevent old-code fallback.
         verification = (
             EmailVerificationCode.objects.filter(
                 user=locked_user,
@@ -230,14 +223,13 @@ def verify_email_code(
 
         if verification is None:
             raise ValueError(
-                "No verification code found. "
-                "Please request a new one."
+                "No verification code found."
             )
 
         if verification.is_used:
             raise ValueError(
                 "This code is no longer valid. "
-                "Please request a new one."
+                "Request another code."
             )
 
         if verification.is_expired():
@@ -248,7 +240,7 @@ def verify_email_code(
         if verification.attempts >= MAX_ATTEMPTS:
             raise ValueError(
                 "Too many incorrect attempts. "
-                "Please request a new code."
+                "Request a new code."
             )
 
         if not check_password(
@@ -257,28 +249,37 @@ def verify_email_code(
         ):
             verification.attempts += 1
 
-            fields = ["attempts"]
+            update_fields = ["attempts"]
 
-            # Permanently invalidate a code after
-            # five incorrect guesses.
             if verification.attempts >= MAX_ATTEMPTS:
                 verification.is_used = True
-                fields.append("is_used")
+                update_fields.append("is_used")
 
-            verification.save(update_fields=fields)
-
-            raise ValueError(
-                "Incorrect verification code."
+            verification.save(
+                update_fields=update_fields
             )
 
-        verification.is_used = True
-        verification.save(update_fields=["is_used"])
+            incorrect_code = True
 
-        if purpose == "account":
-            locked_user.is_active = True
-            locked_user.save(update_fields=["is_active"])
+        else:
+            verification.is_used = True
+            verification.save(
+                update_fields=["is_used"]
+            )
 
-            user.is_active = True
+            if purpose == "account":
+                locked_user.is_active = True
+                locked_user.save(
+                    update_fields=["is_active"]
+                )
+
+                user.is_active = True
+
+    # Raise AFTER the transaction commits.
+    # Otherwise Django would roll back
+    # the incorrect-attempt counter.
+    if incorrect_code:
+        raise ValueError("Incorrect verification code.")
 
     return {
         "message": "Email verified successfully."

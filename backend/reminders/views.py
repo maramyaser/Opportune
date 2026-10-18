@@ -13,6 +13,10 @@ from opportunities.services.email_verification import (
 )
 
 from .models import EmailReminderPreference
+from opportunities.security_throttles import (
+    ReminderRequestThrottle,
+    ReminderVerifyThrottle,
+)
 
 
 DEFAULT_DAYS = [7, 3, 1]
@@ -148,6 +152,7 @@ class Preferences(APIView):
 class RequestVerification(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [ReminderVerificationThrottle]
+    throttle_classes = [ReminderRequestThrottle]
 
     def post(self, request):
         pref = get_preference(request.user)
@@ -261,6 +266,7 @@ class ReminderCodeSerializer(serializers.Serializer):
 class VerifyEmail(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [ReminderVerificationThrottle]
+    throttle_classes = [ReminderVerifyThrottle]
 
     def post(self, request):
         serializer = ReminderCodeSerializer(

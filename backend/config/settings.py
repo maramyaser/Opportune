@@ -232,6 +232,17 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    
+   "DEFAULT_THROTTLE_RATES": {
+        "login_ip": "10/min",
+        "login_identifier": "20/hour",
+        "register_ip": "5/hour",
+        "verify_ip": "20/hour",
+        "resend_ip": "5/hour",
+        "reminder_request_ip": "10/hour",
+        "reminder_verify_ip": "20/hour",
+    },
+
 }
 
 
@@ -276,3 +287,24 @@ DEFAULT_FROM_EMAIL = os.getenv(
     "DEFAULT_FROM_EMAIL",
     "notifications@opportune.site",
 )
+
+
+# Shared cache for security rate limits.
+# Keep any other cache configurations your project uses.
+
+CACHES = {
+    "default": {
+        "BACKEND": (
+            "django.core.cache.backends.locmem.LocMemCache"
+        ),
+    },
+    "security": {
+        "BACKEND": (
+            "django.core.cache.backends.db.DatabaseCache"
+        ),
+        "LOCATION": "opportune_throttle_cache",
+        "OPTIONS": {
+            "MAX_ENTRIES": 10000,
+        },
+    },
+}
