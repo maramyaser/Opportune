@@ -249,12 +249,24 @@ REST_FRAMEWORK = {
 }
 
 
+
 SIMPLE_JWT = {
+    # Access token is valid for 30 minutes.
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+
+    # Refresh token is valid for 7 days.
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+
+    # Reject JWT tokens issued before a password change.
     "CHECK_REVOKE_TOKEN": True,
+
+    # Claim containing the password-related hash.
     "REVOKE_TOKEN_CLAIM": "hash_password",
+
+    # Reject authentication for inactive accounts.
+    "CHECK_USER_IS_ACTIVE": True,
 }
+
 
 
 # Allowed React frontend origins.
