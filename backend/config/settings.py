@@ -267,8 +267,8 @@ SIMPLE_JWT = {
 
     # Reject authentication for inactive accounts.
     "CHECK_USER_IS_ACTIVE": True,
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": False,
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }
 
 
