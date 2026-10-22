@@ -80,6 +80,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'support',
     'reminders',
+    'rest_framework_simplejwt.token_blacklist',
+
 ]
 
 class LogAuthorizationHeaderMiddleware:
@@ -265,6 +267,8 @@ SIMPLE_JWT = {
 
     # Reject authentication for inactive accounts.
     "CHECK_USER_IS_ACTIVE": True,
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
 }
 
 

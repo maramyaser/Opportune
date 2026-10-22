@@ -1,7 +1,10 @@
 
 from django.urls import path
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,
+    TokenBlacklistView,
+)
 
 from .views import OpportunityViewSet
 from .auth_views import RegisterView, LoginView
@@ -54,7 +57,12 @@ urlpatterns = [
         "auth/password-reset/confirm/",
          PasswordResetConfirmView.as_view(),
         name="password-reset-confirm",
-),
+    ),
+    path(
+         "auth/logout/",
+        TokenBlacklistView.as_view(),
+         name="token_logout",
+    ),
 
 ] + router.urls
 

@@ -141,6 +141,28 @@ function App() {
   useEffect(() => {
     if (!authRequired) loadOpportunities()
   }, [authRequired, loadOpportunities])
+  
+  
+useEffect(() => {
+  const handleSessionExpired = () => {
+    setAuthRequired(true)
+    setOpportunities([])
+  }
+
+  window.addEventListener(
+    'opportune:session-expired',
+    handleSessionExpired
+  )
+
+  return () => {
+    window.removeEventListener(
+      'opportune:session-expired',
+      handleSessionExpired
+    )
+  }
+}, [])
+
+
 const visibleOpportunities = useMemo(() => {
   return opportunities.filter((item) => {
     const type = getType(item)
