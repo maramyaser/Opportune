@@ -5,6 +5,12 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenBlacklistView,
 )
+from .cookie_auth_views import (
+    cookie_csrf,
+    CookieLoginView,
+    CookieRefreshView,
+    CookieLogoutView,
+)
 
 from .views import OpportunityViewSet
 from .auth_views import RegisterView, LoginView
@@ -63,6 +69,35 @@ urlpatterns = [
         TokenBlacklistView.as_view(),
          name="token_logout",
     ),
+    
+# -----------------------------------
+# Step 4.13 - Secure Cookie Auth
+# -----------------------------------
+
+path(
+    "auth/cookie/csrf/",
+    cookie_csrf,
+    name="cookie-csrf",
+),
+
+path(
+    "auth/cookie/login/",
+    CookieLoginView.as_view(),
+    name="cookie-login",
+),
+
+path(
+    "auth/cookie/refresh/",
+    CookieRefreshView.as_view(),
+    name="cookie-refresh",
+),
+
+path(
+    "auth/cookie/logout/",
+    CookieLogoutView.as_view(),
+    name="cookie-logout",
+),
+
 
 ] + router.urls
 

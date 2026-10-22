@@ -276,23 +276,44 @@ SIMPLE_JWT = {
 
 
 # Allowed React frontend origins.
+
+# -----------------------------------------
+# Opportune: Secure Cookie Authentication
+# -----------------------------------------
+
+# React frontend origins allowed to call Django.
 CORS_ALLOWED_ORIGINS = [
-    origin.strip().rstrip("/")
-    for origin in os.getenv(
-        "CORS_ALLOWED_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173",
-    ).split(",")
-    if origin.strip()
+    "https://opportune.site",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
+# Allow browsers to send cookies to our API.
+CORS_ALLOW_CREDENTIALS = True
+
+# Required for cross-origin CSRF-protected requests.
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip().rstrip("/")
-    for origin in os.getenv(
-        "CSRF_TRUSTED_ORIGINS",
-        "",
-    ).split(",")
-    if origin.strip()
+    "https://opportune.site",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
+
+# The frontend receives a CSRF token from a dedicated
+# JSON endpoint rather than reading the CSRF cookie.
+CSRF_COOKIE_HTTPONLY = True
+
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = "Lax"
+
+# Refresh token cookie settings.
+AUTH_REFRESH_COOKIE_NAME = "opportune_refresh"
+AUTH_REFRESH_COOKIE_PATH = "/api/auth/cookie/"
+AUTH_REFRESH_COOKIE_SECURE = not DEBUG
+AUTH_REFRESH_COOKIE_SAMESITE = "Lax"
+
 
 
 # Opportune email reminders
