@@ -308,6 +308,18 @@ SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SAMESITE = "Lax"
 
+
+# HSTS: Start with a short testing period.
+# Enable only in production.
+SECURE_HSTS_SECONDS = 300 if not DEBUG else 0
+
+# Do not enforce HSTS on other subdomains yet.
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+
+# Do not add the domain to browser preload lists.
+SECURE_HSTS_PRELOAD = False
+
+
 # Refresh token cookie settings.
 AUTH_REFRESH_COOKIE_NAME = "opportune_refresh"
 AUTH_REFRESH_COOKIE_PATH = "/api/auth/cookie/"
