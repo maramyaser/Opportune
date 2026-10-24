@@ -222,11 +222,18 @@ STORAGES = {
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
+
+# Email configuration for Opportune
 MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
+    "default": {
+        "BACKEND": (
+            "opportunities.services.django_brevo_backend.BrevoEmailBackend"
+            if not DEBUG
+            else "django.core.mail.backends.console.EmailBackend"
+        ),
     },
 }
+
 
 
 REST_FRAMEWORK = {
