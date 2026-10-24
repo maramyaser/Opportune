@@ -1795,3 +1795,19 @@ p {
   outline: 3px solid #d88b45;
   outline-offset: 3px;
 }
+
+.session-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #f8faf5;
+  color: #359fa0;
+  font-weight: 700;
+}
+
+.session-loading span {
+  font-size: 48px;
+}

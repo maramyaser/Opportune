@@ -39,6 +39,7 @@ import {
   getOpportunities,
   updateOpportunity,
   logout,
+  restoreSession,
 } from './services/api'
 import './App.css'
 import Auth from './Auth'
@@ -102,7 +103,8 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const [authRequired, setAuthRequired] = useState(() => !localStorage.getItem('opportune_access_token'))
+  const [authRequired, setAuthRequired] = useState(true)
+  const [checkingSession, setCheckingSession] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [showNotifications, setShowNotifications] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -161,6 +163,41 @@ useEffect(() => {
     )
   }
 }, [])
+
+
+useEffect(() => {
+  let mounted = true
+
+  async function checkExistingSession() {
+    try {
+      const authenticated = await restoreSession()
+
+      if (mounted) {
+        setAuthRequired(!authenticated)
+      }
+    } catch (error) {
+      console.error(
+        'Could not restore Opportune session:',
+        error
+      )
+
+      if (mounted) {
+        setAuthRequired(true)
+      }
+    } finally {
+      if (mounted) {
+        setCheckingSession(false)
+      }
+    }
+  }
+
+  checkExistingSession()
+
+  return () => {
+    mounted = false
+  }
+}, [])
+
 
 
 const visibleOpportunities = useMemo(() => {
@@ -512,6 +549,14 @@ const upcomingNotifications = useMemo(() => {
     .sort((a, b) => a.daysLeft - b.daysLeft)
 }, [opportunities])
   if (!isKnownPath) { return <NotFound /> }
+  if (checkingSession) {
+    return (
+      <div className="session-loading">
+        <span>✦</span>
+        <p>Opening your Opportune space...</p>
+      </div>
+    )
+  }
   if (authRequired) {
      return <Auth onAuthenticated={() => setAuthRequired(false)} />
     }
