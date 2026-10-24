@@ -23,9 +23,15 @@ DEFAULT_DAYS = [7, 3, 1]
 ALLOWED_DAYS = {1, 3, 7}
 
 
-class ReminderVerificationThrottle(UserRateThrottle):
-    scope = "reminder_verification"
+
+class ReminderRequestUserThrottle(UserRateThrottle):
+    scope = "reminder_request_user"
     rate = "5/hour"
+
+
+class ReminderVerifyUserThrottle(UserRateThrottle):
+    scope = "reminder_verify_user"
+    rate = "20/hour"
 
 
 def email_of(user):
@@ -151,8 +157,10 @@ class Preferences(APIView):
 
 class RequestVerification(APIView):
     permission_classes = [IsAuthenticated]
-    throttle_classes = [ReminderVerificationThrottle]
-    throttle_classes = [ReminderRequestThrottle]
+    throttle_classes = [
+        ReminderRequestUserThrottle,
+        ReminderRequestThrottle,
+    ]
 
     def post(self, request):
         pref = get_preference(request.user)
@@ -262,12 +270,12 @@ class ReminderCodeSerializer(serializers.Serializer):
     email = serializers.EmailField()
     code = serializers.RegexField(regex=r"^\d{6}$")
 
-
 class VerifyEmail(APIView):
     permission_classes = [IsAuthenticated]
-    throttle_classes = [ReminderVerificationThrottle]
-    throttle_classes = [ReminderVerifyThrottle]
-
+    throttle_classes = [
+        ReminderVerifyUserThrottle,
+        ReminderVerifyThrottle,
+    ]
     def post(self, request):
         serializer = ReminderCodeSerializer(
             data=request.data
