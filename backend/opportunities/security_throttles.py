@@ -5,14 +5,28 @@ from django.core.cache import caches
 from rest_framework.throttling import SimpleRateThrottle
 
 
+
 class SharedIPThrottle(SimpleRateThrottle):
     """
     Rate-limit requests by client IP.
 
-    Uses a database-backed shared cache.
+    On Render, the trusted edge sets the first
+    X-Forwarded-For entry to the real client IP.
+
+    Uses the shared database-backed security cache.
     """
 
     cache = caches["security"]
+
+    def get_ident(self, request):
+        forwarded_for = request.META.get(
+            "HTTP_X_FORWARDED_FOR", ""
+        )
+
+        if forwarded_for:
+            return forwarded_for.split(",", 1)[0].strip()
+
+        return request.META.get("REMOTE_ADDR", "")
 
     def get_cache_key(self, request, view):
         identifier = self.get_ident(request)
