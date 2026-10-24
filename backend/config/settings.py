@@ -318,8 +318,7 @@ SESSION_COOKIE_SAMESITE = "Lax"
 
 # HSTS: Start with a short testing period.
 # Enable only in production.
-SECURE_HSTS_SECONDS = 300 if not DEBUG else 0
-
+SECURE_HSTS_SECONDS = 86400 if not DEBUG else 0
 # Do not enforce HSTS on other subdomains yet.
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 
