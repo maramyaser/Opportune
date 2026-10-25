@@ -7,6 +7,9 @@ import certifi
 import urllib3
 from bs4 import BeautifulSoup
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 MAX_PAGE_SIZE = 1_000_000
 MAX_TEXT_LENGTH = 20_000
@@ -127,8 +130,13 @@ def extract_page_text(url):
             )
 
         if response.status >= 400:
-            raise PageExtractionError(
-                "Could not retrieve this webpage."
+             logger.warning(
+              "[EXTRACTION] Target website returned HTTP %s",
+                 response.status,
+             )
+
+             raise PageExtractionError(
+                  "Could not retrieve this webpage."
             )
 
         content_type = response.headers.get(
@@ -156,9 +164,14 @@ def extract_page_text(url):
         html = b"".join(chunks)
 
     except urllib3.exceptions.HTTPError as exc:
+        logger.warning(
+        "[EXTRACTION] Network error: %s",
+        type(exc).__name__,
+    )
+
         raise PageExtractionError(
-            "Could not retrieve this webpage."
-        ) from exc
+        "Could not retrieve this webpage."
+    ) from exc
 
     finally:
         if response is not None:
