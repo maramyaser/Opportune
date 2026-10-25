@@ -129,15 +129,28 @@ def extract_page_text(url):
                 "The page redirects. Please use its final HTTPS URL."
             )
 
-        if response.status >= 400:
+        
+        if response.status == 403:
              logger.warning(
-              "[EXTRACTION] Target website returned HTTP %s",
-                 response.status,
-             )
+               "[EXTRACTION] Website denied access: HTTP 403"
+            )
 
              raise PageExtractionError(
-                  "Could not retrieve this webpage."
-            )
+              "This website is blocking automated access. "
+                  "Please copy the opportunity details and "
+                "use the Paste Text option instead."
+                )
+
+        if response.status >= 400:
+             logger.warning(
+                "[EXTRACTION] Target website returned HTTP %s",
+                 response.status,
+                )
+
+             raise PageExtractionError(
+              "Could not retrieve this webpage."
+              )
+
 
         content_type = response.headers.get(
             "Content-Type", ""

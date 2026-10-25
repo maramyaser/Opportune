@@ -220,3 +220,48 @@ class OpportunitySSRFTests(SimpleTestCase):
                 )
 
             response.close.assert_called_once()
+    
+    def test_blocked_website_shows_helpful_message(self):
+        """HTTP 403 should suggest using Paste Text."""
+
+        public_dns = [
+            (
+                socket.AF_INET,
+                socket.SOCK_STREAM,
+                6,
+                "",
+                ("93.184.215.14", 443),
+            )
+        ]
+
+        response = MagicMock()
+        response.status = 403
+        response.headers = {
+            "Content-Type": "text/html"
+        }
+
+        with (
+            patch.object(
+                extractor.socket,
+                "getaddrinfo",
+                return_value=public_dns,
+            ),
+            patch.object(
+                extractor.urllib3,
+                "HTTPSConnectionPool",
+            ) as mock_pool,
+        ):
+            mock_pool.return_value.urlopen.return_value = (
+                response
+            )
+
+            with self.assertRaisesRegex(
+                extractor.PageExtractionError,
+                "Paste Text",
+            ):
+                extract_page_text(
+                    "https://example.com/opportunity"
+                )
+
+            response.close.assert_called_once()
+
