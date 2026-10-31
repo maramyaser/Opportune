@@ -292,22 +292,27 @@ SIMPLE_JWT = {
 # Opportune: Secure Cookie Authentication
 # -----------------------------------------
 
-# React frontend origins allowed to call Django.
-CORS_ALLOWED_ORIGINS = [
+
+# Trusted production frontend.
+PRODUCTION_ORIGINS = [
     "https://opportune.site",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
 ]
 
-# Allow browsers to send cookies to our API.
+# Additional origins permitted only during development.
+DEVELOPMENT_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+] if DEBUG else []
+
+CORS_ALLOWED_ORIGINS = (
+    PRODUCTION_ORIGINS + DEVELOPMENT_ORIGINS
+)
+
+CSRF_TRUSTED_ORIGINS = (
+    PRODUCTION_ORIGINS + DEVELOPMENT_ORIGINS
+)
+
 CORS_ALLOW_CREDENTIALS = True
-
-# Required for cross-origin CSRF-protected requests.
-CSRF_TRUSTED_ORIGINS = [
-    "https://opportune.site",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
 
 # The frontend receives a CSRF token from a dedicated
 # JSON endpoint rather than reading the CSRF cookie.
