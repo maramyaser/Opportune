@@ -1,17 +1,20 @@
 
-import html
+import logging
 import os
 
-import resend
-
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.mail import EmailMessage
+from django.core.validators import validate_email
+
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
+
+
+logger = logging.getLogger(__name__)
 
 
 class ContactMessageThrottle(AnonRateThrottle):
@@ -20,6 +23,7 @@ class ContactMessageThrottle(AnonRateThrottle):
 
 class ContactMessageView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
     throttle_classes = [ContactMessageThrottle]
 
     def post(self, request):
@@ -53,48 +57,61 @@ class ContactMessageView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        api_key = os.getenv("RESEND_API_KEY")
-        from_email = os.getenv("RESEND_FROM_EMAIL")
-        receiver_email = os.getenv("CONTACT_RECEIVER_EMAIL")
+        receiver_email = os.getenv(
+            "CONTACT_RECEIVER_EMAIL", ""
+        ).strip()
 
-        if not all([api_key, from_email, receiver_email]):
+        if not receiver_email:
             return Response(
-                {"detail": "Email delivery is not configured yet."},
+                {"detail": "Support email is not configured yet."},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
-        safe_name = html.escape(name)
-        safe_email = html.escape(email)
-        safe_subject = html.escape(subject)
-        safe_message = html.escape(message).replace("\n", "<br>")
+        try:
+            validate_email(receiver_email)
+        except ValidationError:
+            logger.error("Invalid support recipient configuration")
+            return Response(
+                {"detail": "Support email is not configured correctly."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        email_body = (
+            "New Opportune support message\n\n"
+            f"Name: {name}\n"
+            f"Email: {email}\n"
+            f"Subject: {subject}\n\n"
+            f"Message:\n{message}"
+        )
 
         try:
-            resend.api_key = api_key
+            support_email = EmailMessage(
+                subject=f"Opportune Support: {subject}",
+                body=email_body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[receiver_email],
+                reply_to=[email],
+            )
 
-            resend.Emails.send({
-                "from": from_email,
-                "to": [receiver_email],
-                "reply_to": email,
-                "subject": f"Opportune Support: {subject}",
-                "html": f"""
-                    <h2>New Opportune support message</h2>
-                    <p><strong>Name:</strong> {safe_name}</p>
-                    <p><strong>Email:</strong> {safe_email}</p>
-                    <p><strong>Subject:</strong> {safe_subject}</p>
-                    <p><strong>Message:</strong><br>{safe_message}</p>
-                """,
-                "text": (
-                    f"Name: {name}\n"
-                    f"Email: {email}\n"
-                    f"Subject: {subject}\n\n"
-                    f"Message:\n{message}"
-                ),
-            })
+            sent_count = support_email.send(
+                fail_silently=False
+            )
+
+            if sent_count != 1:
+                raise RuntimeError(
+                    "Support email was not accepted by the email backend."
+                )
 
         except Exception:
-            # Log the actual error privately in server logs if needed.
+            logger.exception("Support email delivery failed")
+
             return Response(
-                {"detail": "We couldn't send your message. Please try again later."},
+                {
+                    "detail": (
+                        "We couldn't send your message. "
+                        "Please try again later."
+                    )
+                },
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
