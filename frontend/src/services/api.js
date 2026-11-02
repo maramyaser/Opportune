@@ -24,11 +24,17 @@ export async function login(username, password) {
 }
 
 // Register a new account.
-export async function register(username, email, password) {
+export async function register(
+  username,
+  email,
+  password,
+  privacyAccepted
+) {
   const response = await api.post('/auth/register/', {
     username,
     email,
     password,
+    privacy_policy_accepted: privacyAccepted === true,
   })
 
   return response.data

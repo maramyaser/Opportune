@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from rest_framework import serializers
-
+from .models import PrivacyPolicyAcceptance
 from .services.email_verification import send_verification_code
 from django.contrib.auth import get_user_model
 from rest_framework.exceptions import AuthenticationFailed
@@ -40,20 +40,28 @@ class RegisterSerializer(serializers.ModelSerializer):
         password = validated_data.pop("password")
 
         with transaction.atomic():
-            user = User.objects.create_user(
-                **validated_data,
-                password=password,
-            )
+        # 1. Create the user's account.
+          user = User.objects.create_user(
+            **validated_data,
+            password=password,
+        )
 
-            # Keep account inactive until email verification.
-            user.is_active = False
-            user.save(update_fields=["is_active"])
+        # 2. Keep the account inactive until email verification.
+        user.is_active = False
+        user.save(update_fields=["is_active"])
 
-            send_verification_code(
-                user=user,
-                email=user.email,
-                purpose="account",
-            )
+        # 3. Record Privacy Policy acceptance.
+        PrivacyPolicyAcceptance.objects.create(
+            user=user,
+            policy_version="2026-11-02",
+        )
+
+        # 4. Send the existing verification email.
+        send_verification_code(
+            user=user,
+            email=user.email,
+            purpose="account",
+        )
 
         return user
 

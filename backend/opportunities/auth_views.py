@@ -38,6 +38,24 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     throttle_classes = [RegistrationThrottle]
 
+    def create(self, request, *args, **kwargs):
+        privacy_accepted = request.data.get(
+            "privacy_policy_accepted"
+        )
+
+        if privacy_accepted is not True:
+            return Response(
+                {
+                    "privacy_policy_accepted": [
+                        "You must read and accept the Privacy Policy "
+                        "before creating an account."
+                    ]
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return super().create(request, *args, **kwargs)
+
 
 class LoginView(TokenObtainPairView):
     permission_classes = [AllowAny]

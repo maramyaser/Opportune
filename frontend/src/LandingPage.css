@@ -489,3 +489,33 @@
 @media (prefers-reduced-motion: reduce) {
   .landing-button { transition: none; }
 }
+
+
+.landing-footer {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.landing-footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+}
+
+.landing-footer-links a {
+  color: #438b8d;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.landing-footer-links a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .landing-footer-links {
+    flex-wrap: wrap;
+  }
+}

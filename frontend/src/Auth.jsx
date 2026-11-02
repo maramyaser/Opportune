@@ -1,5 +1,5 @@
-
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { PrivacyPolicyContent } from './components/LegalPages'
 import {
   ArrowLeft,
   ArrowRight,
@@ -55,6 +55,23 @@ export default function Auth({ onAuthenticated }) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const privacyDialogRef = useRef(null)
+
+const [privacyAccepted, setPrivacyAccepted] = useState(false)
+const [privacyConfirmed, setPrivacyConfirmed] = useState(false)
+
+const openPrivacyDialog = () => {
+  setPrivacyConfirmed(false)
+
+  if (!privacyDialogRef.current?.open) {
+    privacyDialogRef.current?.showModal()
+  }
+}
+
+const closePrivacyDialog = () => {
+  privacyDialogRef.current?.close()
+}
+
   const isRegister = mode === 'register'
   const isVerify = mode === 'verify'
   const isRecover = mode === 'recover'
@@ -67,10 +84,16 @@ export default function Auth({ onAuthenticated }) {
     setError('')
     setSuccess('')
     setVerificationCode('')
+    setPrivacyAccepted(false)
+    setPrivacyConfirmed(false)
   }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    if (isRegister && !privacyAccepted) {
+  setError('Please read and accept the Privacy Policy to create an account.')
+  return
+}
 
     if (busy || resending) return
 
@@ -125,11 +148,12 @@ export default function Auth({ onAuthenticated }) {
       }
 
       if (isRegister) {
-        await register(
-          cleanUsername,
-          cleanEmail,
-          password
-        )
+  await register(
+    cleanUsername,
+    cleanEmail,
+    password,
+    privacyAccepted
+  )
 
         setPassword('')
         setVerificationCode('')
@@ -459,7 +483,38 @@ export default function Auth({ onAuthenticated }) {
               )}
             </>
           )}
+          {isRegister && (
+  <div className="auth-privacy-consent">
+    <input
+      id="auth-privacy-accepted"
+      type="checkbox"
+      checked={privacyAccepted}
+      disabled={busy}
+      onChange={(event) => {
+        if (event.target.checked) {
+          openPrivacyDialog()
+        } else {
+          setPrivacyAccepted(false)
+        }
+      }}
+    />
 
+    <label htmlFor="auth-privacy-accepted">
+      I have read and agree to the{' '}
+      <button
+        type="button"
+        className="auth-privacy-link"
+        onClick={(event) => {
+          event.preventDefault()
+          openPrivacyDialog()
+        }}
+      >
+        Privacy Policy
+      </button>
+      .
+    </label>
+  </div>
+)}
           {error && (
             <p
               className="auth-message auth-error"
@@ -483,10 +538,11 @@ export default function Auth({ onAuthenticated }) {
             className="auth-submit"
             type="submit"
             disabled={
-              busy ||
-              resending ||
-              (isVerify && verificationCode.length !== 6)
-            }
+  busy ||
+  resending ||
+  (isRegister && !privacyAccepted) ||
+  (isVerify && verificationCode.length !== 6)
+}
           >
             {busy ? (
               <LoaderCircle
@@ -601,10 +657,74 @@ export default function Auth({ onAuthenticated }) {
           </p>
         )}
 
-        <div className="auth-footnote">
-          MADE WITH ♡ FOR YOUR NEXT BIG THING
-        </div>
       </section>
+
+      <dialog
+        ref={privacyDialogRef}
+        className="auth-privacy-dialog"
+        aria-labelledby="privacy-dialog-title"
+        onClose={() => setPrivacyConfirmed(false)}
+      >
+        <div className="auth-privacy-header">
+          <div>
+            <span>✦ YOUR PRIVACY MATTERS</span>
+            <h2 id="privacy-dialog-title">Privacy Policy</h2>
+          </div>
+
+          <button
+            type="button"
+            className="auth-privacy-close"
+            onClick={closePrivacyDialog}
+            aria-label="Close Privacy Policy"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="auth-privacy-scroll">
+          <article className="legal-content">
+            <PrivacyPolicyContent />
+          </article>
+        </div>
+
+        <div className="auth-privacy-bottom">
+          <label className="auth-privacy-confirm">
+            <input
+              type="checkbox"
+              checked={privacyConfirmed}
+              onChange={(event) =>
+                setPrivacyConfirmed(event.target.checked)
+              }
+            />
+
+            <span>
+              I have read and agree to the Privacy Policy.
+            </span>
+          </label>
+
+          <div className="auth-privacy-actions">
+            <button
+              type="button"
+              className="auth-privacy-cancel"
+              onClick={closePrivacyDialog}
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              className="auth-privacy-agree"
+              disabled={!privacyConfirmed}
+              onClick={() => {
+                setPrivacyAccepted(true)
+                closePrivacyDialog()
+              }}
+            >
+              I agree ✓
+            </button>
+          </div>
+        </div>
+      </dialog>
     </main>
   )
 }

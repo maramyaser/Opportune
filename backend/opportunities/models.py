@@ -153,3 +153,24 @@ status tracks progress from saving an opportunity to submitting an application.
 
 
 Indexes help with common dashboard queries. """
+
+class PrivacyPolicyAcceptance(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="privacy_policy_acceptance",
+    )
+
+    policy_version = models.CharField(
+        max_length=20,
+    )
+
+    accepted_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return (
+            f"{self.user_id} accepted "
+            f"privacy policy {self.policy_version}"
+        )

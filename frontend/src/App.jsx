@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import NotFound from './components/404'
 import LandingPage from './components/LandingPage'
+import { PrivacyPolicy, CookiePolicy } from './components/LegalPages'
 import {
   AlarmClock,
   ArrowDownRight,
@@ -96,10 +97,15 @@ function App() {
   const currentPath = window.location.pathname
   const isLandingPage =
      currentPath === '/' || currentPath === '/index.html'
-  const isKnownPath =
-     isLandingPage ||
-    currentPath === '/login' ||
-    currentPath === '/dashboard'
+  const isLegalPage =
+  currentPath === '/privacy' ||
+  currentPath === '/cookies'
+
+const isKnownPath =
+  isLandingPage ||
+  isLegalPage ||
+  currentPath === '/login' ||
+  currentPath === '/dashboard'
   const [opportunities, setOpportunities] = useState([])
   const [query, setQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('All')
@@ -182,10 +188,10 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (isLandingPage || !isKnownPath) {
-    setCheckingSession(false)
-    return
-  }
+  if (isLandingPage || isLegalPage || !isKnownPath) {
+  setCheckingSession(false)
+  return
+}
 
   let mounted = true
 
@@ -576,6 +582,13 @@ const upcomingNotifications = useMemo(() => {
       onGetStarted={() => window.location.assign('/login')}
     />
   )
+}
+if (currentPath === '/privacy') {
+  return <PrivacyPolicy />
+}
+
+if (currentPath === '/cookies') {
+  return <CookiePolicy />
 }
 
 if (!isKnownPath) {

@@ -201,9 +201,15 @@ export default function LandingPage({
       </main>
 
       <footer className="landing-footer">
-        <span>© {new Date().getFullYear()} Opportune</span>
-        <span>Made for your next big thing ✦</span>
-      </footer>
+  <span>© {new Date().getFullYear()} Opportune</span>
+
+  <nav className="landing-footer-links" aria-label="Legal information">
+    <a href="/privacy">Privacy Policy</a>
+    <a href="/cookies">Cookie Policy</a>
+  </nav>
+
+  <span>Made for your next big thing ✦</span>
+</footer>
     </div>
   )
 }
