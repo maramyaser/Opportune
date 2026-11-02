@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import NotFound from './components/404'
+import LandingPage from './components/LandingPage'
 import {
   AlarmClock,
   ArrowDownRight,
@@ -93,9 +94,12 @@ const getErrorMessage = (error, fallback) =>
 
 function App() {
   const currentPath = window.location.pathname
+  const isLandingPage =
+     currentPath === '/' || currentPath === '/index.html'
   const isKnownPath =
-     currentPath === '/' ||
-     currentPath === '/index.html'
+     isLandingPage ||
+    currentPath === '/login' ||
+    currentPath === '/dashboard'
   const [opportunities, setOpportunities] = useState([])
   const [query, setQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('All')
@@ -141,8 +145,20 @@ function App() {
     }
   }, [])
   useEffect(() => {
-    if (!authRequired) loadOpportunities()
-  }, [authRequired, loadOpportunities])
+  if (!authRequired && currentPath === '/dashboard') {
+    loadOpportunities()
+  }
+}, [authRequired, loadOpportunities, currentPath])
+ 
+useEffect(() => {
+  if (
+    currentPath === '/login' &&
+    !checkingSession &&
+    !authRequired
+  ) {
+    window.location.replace('/dashboard')
+  }
+}, [currentPath, checkingSession, authRequired])
   
   
 useEffect(() => {
@@ -166,6 +182,11 @@ useEffect(() => {
 
 
 useEffect(() => {
+  if (isLandingPage || !isKnownPath) {
+    setCheckingSession(false)
+    return
+  }
+
   let mounted = true
 
   async function checkExistingSession() {
@@ -548,7 +569,18 @@ const upcomingNotifications = useMemo(() => {
     )
     .sort((a, b) => a.daysLeft - b.daysLeft)
 }, [opportunities])
-  if (!isKnownPath) { return <NotFound /> }
+  if (isLandingPage) {
+  return (
+    <LandingPage
+      onSignIn={() => window.location.assign('/login')}
+      onGetStarted={() => window.location.assign('/login')}
+    />
+  )
+}
+
+if (!isKnownPath) {
+  return <NotFound />
+}
   if (checkingSession) {
     return (
       <div className="session-loading">
@@ -558,8 +590,24 @@ const upcomingNotifications = useMemo(() => {
     )
   }
   if (authRequired) {
-     return <Auth onAuthenticated={() => setAuthRequired(false)} />
-    }
+  return (
+    <Auth
+      onAuthenticated={() => {
+        setAuthRequired(false)
+        window.location.assign('/dashboard')
+      }}
+    />
+  )
+}
+
+if (currentPath === '/login') {
+  return (
+    <div className="session-loading">
+      <span>✦</span>
+      <p>Opening your dashboard...</p>
+    </div>
+  )
+}
   const totalClosingSoon = opportunities.filter((item) => {
     const days = daysUntil(item.deadline)
     return days !== null && days >= 0 && days <= 14
