@@ -4,7 +4,7 @@ import os
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.core.validators import validate_email
 
 from rest_framework import status
@@ -85,7 +85,7 @@ class ContactMessageView(APIView):
         )
 
         try:
-            support_email = EmailMessage(
+            support_email = EmailMultiAlternatives(
                 subject=f"Opportune Support: {subject}",
                 body=email_body,
                 from_email=settings.DEFAULT_FROM_EMAIL,
