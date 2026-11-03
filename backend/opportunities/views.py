@@ -46,18 +46,30 @@ class OpportunityExtractView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        url = request.data.get("url")
+        url = request.data.get("url", "")
         pasted_text = request.data.get("text", "")
 
+        if not isinstance(url, str) or not isinstance(pasted_text, str):
+             return Response( {"detail": "URL and text must be strings."},
+                               status=400,
+        )
+
+        url = url.strip()
+        pasted_text = pasted_text.strip()
+
         if not url and not pasted_text:
-            return Response(
-                {
-                    "detail": (
-                        "Provide an opportunity URL or pasted text."
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+             return Response(  {"detail": "Provide an opportunity URL or pasted text."},
+                     status=400,
+             )
+
+        if url and pasted_text:
+              return Response(
+                 {
+                      "detail": "Please provide either a URL or pasted text, not both.",
+                       "code": "multiple_inputs",
+                   },
+                   status=400,
+          )
 
         total_start = time.perf_counter()
 
