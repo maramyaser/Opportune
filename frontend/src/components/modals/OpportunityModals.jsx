@@ -41,7 +41,7 @@ export default function OpportunityModals({
                 <textarea id="opportunity-text" style={{ ...fieldStyle, resize: 'vertical' }} rows={5} placeholder="Paste the opportunity description here..." value={pastedText} onChange={(event) => setPastedText(event.target.value)} />
                 {extractError && <p role="alert" style={{ color: '#b83d2a' }}>{extractError}</p>}
                 <button className="primary-button" type="submit" disabled={extracting}>
-                  {extracting ? <LoaderCircle size={18} className="spin" /> : <Sparkles size={18} />}
+                  {extracting ? <LoaderCircle size={18} className="spin opportune-extract-spinner" /> : <Sparkles size={18} />}
                   {extracting ? 'Extracting details...' : 'Extract details'}
                 </button>
               </form>
@@ -81,7 +81,7 @@ export default function OpportunityModals({
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                   <button type="button" className="secondary-button" onClick={() => { if (editingOpportunityId !== null) { closeOpportunityForm() } else { setDraft(null); setExtractError('') } }} disabled={saving}>{editingOpportunityId !== null ? 'Cancel' : 'Back'}</button>
                   <button type="submit" className="primary-button" disabled={saving}>
-                    {saving ? <LoaderCircle size={18} className="spin" /> : <Check size={18} />}
+                    {saving ? <LoaderCircle size={18} className="spin opportune-extract-spinner" /> : <Check size={18} />}
                     {saving ? 'Saving...' : editingOpportunityId !== null ? 'Save changes' : 'Save opportunity'}
                   </button>
                 </div>
