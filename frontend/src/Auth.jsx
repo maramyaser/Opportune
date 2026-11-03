@@ -232,19 +232,11 @@ const closePrivacyDialog = () => {
       : isRecover
         ? "Didn't finish verifying your account? Request another code and pick up where you left off."
         : isRegister
-          ? 'Create your account and keep your next big opportunities in one happy place.'
-          : 'Track internships, scholarships, jobs and exciting opportunities in one happy place.'
+          ? 'Create your account and keep your next big opportunities in one place.'
+          : 'Track internships, scholarships, jobs and exciting opportunities in one place.'
 
   return (
     <main className="auth-page">
-      <div className="auth-decoration auth-decoration-one">
-        ✦
-      </div>
-
-      <div className="auth-decoration auth-decoration-two">
-        ✳
-      </div>
-
       <section className="auth-card">
 
         <div className="auth-brand-mark">
@@ -257,12 +249,7 @@ const closePrivacyDialog = () => {
           )}
           <span>✦</span>
         </div>
-
-        <p className="auth-eyebrow">
-          <Sparkles size={15} />
-          YOUR LITTLE LAUNCHPAD
-        </p>
-
+        <p></p>
         <h1>{heading}</h1>
 
         <p className="auth-description">

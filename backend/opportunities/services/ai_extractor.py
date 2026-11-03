@@ -3,7 +3,7 @@ import json
 import logging
 import os
 from datetime import datetime, timezone
-
+import time
 from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field, ValidationError
@@ -37,7 +37,15 @@ def extract_opportunity_details(page_text: str, source_url: str):
     # Keep the input bounded to control cost and latency.
     page_text = page_text[:20000]
 
-    client = genai.Client(api_key=api_key)
+    client = genai.Client(
+    api_key=api_key,
+    http_options=types.HttpOptions(
+        timeout=20000,
+        retry_options=types.HttpRetryOptions(
+            attempts=1,
+        ),
+    ),
+)
 
     prompt = f"""
 You extract facts from opportunity descriptions.
@@ -64,13 +72,16 @@ Source text:
 
     try:
         response = client.models.generate_content(
-            model="gemini-3.8-flash",
+            model="gemini-3.5-flash-lite",
             contents=prompt,
             config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=OpportunityDetails,
-                temperature=0.1,
+                   response_mime_type="application/json",
+                   response_schema=OpportunityDetails,
+                   temperature=0.1,
+                   thinking_config=types.ThinkingConfig(
+                      thinking_level="low",
             ),
+),
         )
 
         if not response.text:
@@ -83,7 +94,7 @@ Source text:
         logger.warning("AI output validation failed: %s", exc)
         raise ValueError("AI returned invalid opportunity details.") from exc
     except Exception as exc:
-        logger.exception("Opportunity AI extraction failed")
+        logger.exception("Opportunity AI extraction failed try again later")
         raise RuntimeError(
             "AI extraction failed. Check your API access and try again."
         ) from exc
