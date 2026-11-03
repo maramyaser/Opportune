@@ -4,13 +4,6 @@ export default function Topbar({ activeNav, sidebarOpen, setSidebarOpen, upcomin
   return (
     <>
         <header className="topbar">
-          <button type="button" className="icon-button sidebar-toggle"
-                  aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-                  aria-expanded={sidebarOpen}
-                  title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-                   onClick={() => setSidebarOpen((open) => !open)}
-          >
-            {sidebarOpen ? <PanelLeftClose size={19} /> : <PanelLeftOpen size={19} />}</button>
           <div className="breadcrumb">
             <span>Workspace</span>
             <span className="breadcrumb-dot">/</span>

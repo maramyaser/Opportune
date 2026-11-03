@@ -115,7 +115,7 @@ const isKnownPath =
   const [notice, setNotice] = useState('')
   const [authRequired, setAuthRequired] = useState(true)
   const [checkingSession, setCheckingSession] = useState(true)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState( () => window.matchMedia('(min-width: 769px)').matches )
   const [showNotifications, setShowNotifications] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
   const [sourceUrl, setSourceUrl] = useState('')
@@ -225,6 +225,19 @@ useEffect(() => {
   }
 }, [])
 
+useEffect(() => {
+  const media = window.matchMedia('(min-width: 769px)')
+
+  const handleScreenChange = (event) => {
+    setSidebarOpen(event.matches)
+  }
+
+  media.addEventListener('change', handleScreenChange)
+
+  return () => {
+    media.removeEventListener('change', handleScreenChange)
+  }
+}, [])
 
 
 const visibleOpportunities = useMemo(() => {
@@ -247,6 +260,11 @@ const visibleOpportunities = useMemo(() => {
 }, [opportunities, query, activeFilter, activeNav])
 const handleNav = (name) => {
   setActiveNav(name)
+
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    setSidebarOpen(false)
+  }
+
   if (name === 'Add opportunity') {
     openAddModal()
   }
@@ -631,6 +649,22 @@ if (currentPath === '/login') {
   return (
     <div className={`app-shell ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
       <Sidebar activeNav={activeNav} handleNav={handleNav} totalClosingSoon={totalClosingSoon} openAddModal={openAddModal} handleLogout={handleLogout} />
+      {/* Mobile backdrop */}
+{/* Always-visible sidebar toggle */}
+<button
+  type="button"
+  className="sidebar-edge-toggle"
+  onClick={() => setSidebarOpen((previous) => !previous)}
+  aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+  aria-expanded={sidebarOpen}
+  title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+>
+  {sidebarOpen ? (
+    <PanelLeftClose size={20} />
+  ) : (
+    <PanelLeftOpen size={20} />
+  )}
+</button>
       <main className="main-content" id="home">
         <Topbar
           activeNav={activeNav}

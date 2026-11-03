@@ -39,10 +39,6 @@ button {
   margin-left: 0;
 }
 
-/* Keep the toggle button visible and usable */
-.sidebar-toggle {
-  flex-shrink: 0;
-}
 
 /* Smoothly expand the dashboard */
 .main-content {
@@ -1810,4 +1806,145 @@ p {
 
 .session-loading span {
   font-size: 48px;
+}
+
+/* ========================================
+   RESPONSIVE SIDEBAR EDGE TOGGLE
+======================================== */
+
+.app-shell {
+  --sidebar-edge-width: 300px;
+}
+
+/* Always-visible sidebar control */
+.sidebar-edge-toggle {
+  position: fixed;
+  top: 82px;
+  left: calc(var(--sidebar-edge-width) - 18px);
+  z-index: 1100;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #8ad6d1;
+  border-radius: 50%;
+
+  background: #ffffff;
+  color: #267d80;
+
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+
+  cursor: pointer;
+
+  transition:
+    left 0.25s ease,
+    background 0.2s ease;
+}
+
+
+
+.sidebar-edge-toggle:focus-visible {
+  outline: 3px solid #ff8c52;
+  outline-offset: 3px;
+}
+
+.sidebar-edge-toggle:hover {
+  background: #e2f7f3;
+}
+
+/* Move toggle to the left when sidebar is closed */
+.app-shell.sidebar-closed .sidebar-edge-toggle {
+  left: 12px;
+}
+
+/* Backdrop is mobile-only */
+.sidebar-backdrop {
+  display: none;
+}
+
+/* ========================================
+   MOBILE SIDEBAR
+======================================== */
+
+@media (max-width: 768px) {
+
+  .app-shell.sidebar-open,
+  .app-shell.sidebar-closed {
+    display: block;
+    grid-template-columns: 1fr;
+  }
+
+  /* Sidebar becomes a sliding drawer */
+  .app-shell .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: min(300px, 85vw);
+    max-width: 85vw;
+    height: 100dvh;
+
+    overflow-y: auto;
+
+    z-index: 1001;
+
+    transition: transform 0.25s ease;
+  }
+
+  .app-shell.sidebar-closed .sidebar {
+    display: flex;
+    transform: translateX(-100%);
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .app-shell.sidebar-open .sidebar {
+    display: flex;
+    transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  /* Dashboard uses the entire mobile width */
+  .app-shell .main-content {
+    margin-left: 0;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Dim the dashboard when sidebar opens */
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+
+    z-index: 1000;
+
+    background: rgba(22, 48, 49, 0.45);
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Toggle when sidebar is closed */
+  .app-shell.sidebar-closed .sidebar-edge-toggle {
+    top: 15px;
+    left: 12px;
+  }
+
+  /* Toggle follows the sidebar edge when open */
+  .app-shell.sidebar-open .sidebar-edge-toggle {
+    top: 15px;
+    left: calc(min(300px, 85vw) - 18px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-edge-toggle,
+  .app-shell .sidebar {
+    transition: none;
+  }
 }
