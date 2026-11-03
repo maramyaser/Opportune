@@ -35,10 +35,26 @@ export default function OpportunityModals({
             {!draft ? (
               <form onSubmit={handleExtract}>
                 <label htmlFor="opportunity-url">Opportunity URL</label>
-                <input id="opportunity-url" style={fieldStyle} type="url" placeholder="https://example.com/opportunity" value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)} />
+                <input
+  id="opportunity-url"
+  style={fieldStyle}
+  type="url"
+  placeholder="https://example.com/opportunity"
+  value={sourceUrl}
+  onChange={(event) => setSourceUrl(event.target.value)}
+  disabled={extracting || saving || Boolean(pastedText.trim())}
+/>
                 <div style={{ textAlign: 'center', margin: '0 0 14px', fontWeight: 800, opacity: 0.65 }}>OR PASTE THE DESCRIPTION</div>
                 <label htmlFor="opportunity-text">Opportunity text</label>
-                <textarea id="opportunity-text" style={{ ...fieldStyle, resize: 'vertical' }} rows={5} placeholder="Paste the opportunity description here..." value={pastedText} onChange={(event) => setPastedText(event.target.value)} />
+                <textarea
+  id="opportunity-text"
+  style={{ ...fieldStyle, resize: 'vertical' }}
+  rows={5}
+  placeholder="Paste the opportunity description here..."
+  value={pastedText}
+  onChange={(event) => setPastedText(event.target.value)}
+  disabled={extracting || saving || Boolean(sourceUrl.trim())}
+/>
                 {extractError && <p role="alert" style={{ color: '#b83d2a' }}>{extractError}</p>}
                 <button className="primary-button" type="submit" disabled={extracting}>
                   {extracting ? <LoaderCircle size={18} className="spin opportune-extract-spinner" /> : <Sparkles size={18} />}
