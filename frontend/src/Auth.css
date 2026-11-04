@@ -615,3 +615,146 @@
   }
 }
 
+
+/* =========================================
+   RESPONSIVE PRIVACY POLICY MODAL FIX
+========================================= */
+
+.auth-privacy-dialog {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  margin: auto;
+
+  width: min(92vw, 720px);
+  max-width: 720px;
+
+  height: min(760px, calc(100dvh - 48px));
+  max-height: calc(100dvh - 48px);
+
+  padding: 0;
+  overflow: hidden;
+  border-radius: 22px;
+}
+
+.auth-privacy-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header stays visible */
+.auth-privacy-header {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.auth-privacy-header > div {
+  min-width: 0;
+}
+
+.auth-privacy-close {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* Only the policy text scrolls */
+.auth-privacy-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.auth-privacy-scroll .legal-content {
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Agreement and buttons stay visible */
+.auth-privacy-bottom {
+  flex: 0 0 auto;
+}
+
+/* =========================================
+   MOBILE PHONES
+========================================= */
+
+@media (max-width: 600px) {
+  .auth-privacy-dialog {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+
+    height: calc(100dvh - 32px);
+    max-height: calc(100dvh - 32px);
+
+    border-radius: 18px;
+  }
+
+  .auth-privacy-header {
+    padding: 15px 16px;
+    gap: 10px;
+  }
+
+  .auth-privacy-header h2 {
+    font-size: 23px;
+    line-height: 1.2;
+  }
+
+  .auth-privacy-header span {
+    font-size: 10px;
+  }
+
+  .auth-privacy-close {
+    width: 36px;
+    height: 36px;
+  }
+
+  .auth-privacy-scroll {
+    padding: 14px 16px;
+  }
+
+  .auth-privacy-scroll .legal-content h2 {
+    font-size: 17px;
+  }
+
+  .auth-privacy-scroll .legal-content p,
+  .auth-privacy-scroll .legal-content li {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .auth-privacy-scroll .legal-content section + section {
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+
+  .auth-privacy-bottom {
+    padding: 12px 16px 16px;
+  }
+
+  .auth-privacy-confirm {
+    gap: 9px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .auth-privacy-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .auth-privacy-actions button {
+    min-width: 0;
+    padding: 11px 8px;
+    font-size: 14px;
+  }
+}
