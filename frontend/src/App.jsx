@@ -52,6 +52,7 @@ import OpportunityModals from './components/modals/OpportunityModals'
 import DashboardOverview from './components/dashboard/DashboardOverview'
 import OpportunityCollection from './components/opportunities/OpportunityCollection'
 import SiteFooter from './components/SiteFooter'
+import NotesPage from './components/NotesPage'
 
 const filters = ['All', 'Internship', 'Scholarship', 'Job', 'Competition']
 const opportunityColors = {
@@ -715,6 +716,8 @@ if (currentPath === '/login') {
         />
 {activeNav === 'Help & tips' ? (
   <HelpSupport />
+) : activeNav === 'My Notes' ? (
+  <NotesPage />
 ) : (
   <div className="dashboard-content">
         <div className="dashboard-content">

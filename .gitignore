@@ -36,3 +36,7 @@ dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local development database and settings
+backend/db_local.sqlite3
+backend/config/local_settings.py

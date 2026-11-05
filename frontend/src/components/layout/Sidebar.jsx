@@ -11,6 +11,7 @@ import {
   LogOut,
   Mail,
   Sparkles,
+  NotebookPen,
 } from 'lucide-react'
 
 import EmailReminderCard from '../EmailReminderCard'
@@ -50,6 +51,7 @@ export default function Sidebar({
           {[
             { name: 'Dashboard', icon: LayoutDashboard },
             { name: 'My opportunities', icon: Bookmark },
+            { name: 'My Notes', icon: NotebookPen },
             { name: 'Deadlines', icon: AlarmClock },
           ].map(({ name, icon: Icon }) => (
             <button

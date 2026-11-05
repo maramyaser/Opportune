@@ -86,30 +86,16 @@ INSTALLED_APPS = [
     'django_otp',
     'django_otp.plugins.otp_totp',
     'django_otp.plugins.otp_static',
+    'notes',
 
 ]
 
-class LogAuthorizationHeaderMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        if request.path.endswith("/api/opportunities/"):
-            print(
-                "[AUTH DEBUG]",
-                "method:", request.method,
-                "has_authorization:",
-                bool(request.META.get("HTTP_AUTHORIZATION")),
-            )
-
-        return self.get_response(request)
 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'config.settings.LogAuthorizationHeaderMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

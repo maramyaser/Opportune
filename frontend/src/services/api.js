@@ -256,6 +256,31 @@ export async function disconnectReminderEmail() {
   return response.data
 }
 
+
+/* =========================================
+   PERSONAL NOTES API
+========================================= */
+
+export async function getNotes() {
+  const response = await api.get('/notes/')
+  return response.data
+}
+
+export async function createNote(payload) {
+  const response = await api.post('/notes/', payload)
+  return response.data
+}
+
+export async function updateNote(id, payload) {
+  const response = await api.patch(`/notes/${id}/`, payload)
+  return response.data
+}
+
+export async function deleteNote(id) {
+  await api.delete(`/notes/${id}/`)
+}
+
+
 // ========================================
 // DEFAULT EXPORT
 // ========================================
@@ -263,3 +288,4 @@ export async function disconnectReminderEmail() {
 // Reuse the cookie-aware Axios instance
 // in any component that needs direct API calls.
 export default api
+

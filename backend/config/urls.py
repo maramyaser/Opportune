@@ -22,5 +22,6 @@ urlpatterns = [
     path("api/", include("opportunities.urls")),
     path("api/support/", include("support.urls")),
     path("api/reminders/", include("reminders.urls")),
+    path("api/", include("notes.urls")),
 
 ]
