@@ -25,6 +25,7 @@ import {
 } from './services/api'
 
 import './Auth.css'
+import SiteFooter from './components/SiteFooter'
 
 const messageFrom = (error, fallback) => {
   const data = error?.response?.data
@@ -236,6 +237,7 @@ const closePrivacyDialog = () => {
           : 'Track internships, scholarships, jobs and exciting opportunities in one place.'
 
   return (
+    <>
     <main className="auth-page">
       <section className="auth-card">
 
@@ -713,5 +715,7 @@ const closePrivacyDialog = () => {
         </div>
       </dialog>
     </main>
+    <SiteFooter />
+    </>
   )
 }

@@ -331,39 +331,6 @@ export default function HelpSupport() {
           </button>
         </form>
       </section>
-
-      {/* FOOTER */}
-      <footer className="help-footer">
-        <div>
-          <h3>Opportune ✦</h3>
-
-          <p>
-            Find opportunities. Stay prepared.
-            Make your next move.
-          </p>
-        </div>
-
-        <div className="help-social-links">
-          <span>Useful links</span>
-
-          <a href="/privacy">
-            Privacy Policy
-          </a>
-
-          <a href="/cookies">
-            Cookie Policy
-          </a>
-
-          <a href="/">
-            Opportune Homepage
-          </a>
-        </div>
-
-        <p className="help-copyright">
-          © {new Date().getFullYear()} Opportune.
-          All rights reserved.
-        </p>
-      </footer>
     </div>
   );
 }

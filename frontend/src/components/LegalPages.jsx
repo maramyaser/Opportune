@@ -1,6 +1,7 @@
 
 import { ArrowLeft, CalendarDays, Cookie, ShieldCheck } from 'lucide-react'
 import './LegalPages.css'
+import SiteFooter from './SiteFooter'
 
 // Replace this with an email address you actually monitor.
 const CONTACT_EMAIL = 'opportunesupport@gmail.com'
@@ -32,14 +33,8 @@ function LegalLayout({ title, description, icon: Icon, children }) {
         <article className="legal-content">{children}</article>
       </main>
 
-      <footer className="legal-footer">
-        <span>© {new Date().getFullYear()} Opportune</span>
-        <nav>
-          <a href="/privacy">Privacy</a>
-          <a href="/cookies">Cookies</a>
-          <a href="/">Home</a>
-        </nav>
-      </footer>
+      <SiteFooter />
+
     </div>
   )
 }

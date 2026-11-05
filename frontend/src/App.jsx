@@ -51,6 +51,8 @@ import Topbar from './components/layout/Topbar'
 import OpportunityModals from './components/modals/OpportunityModals'
 import DashboardOverview from './components/dashboard/DashboardOverview'
 import OpportunityCollection from './components/opportunities/OpportunityCollection'
+import SiteFooter from './components/SiteFooter'
+
 const filters = ['All', 'Internship', 'Scholarship', 'Job', 'Competition']
 const opportunityColors = {
   internship: 'mint',
@@ -100,12 +102,16 @@ function App() {
   const isLegalPage =
   currentPath === '/privacy' ||
   currentPath === '/cookies'
+  
+  const isHelpPage = currentPath === '/help'
 
 const isKnownPath =
   isLandingPage ||
   isLegalPage ||
+  isHelpPage ||
   currentPath === '/login' ||
   currentPath === '/dashboard'
+
   const [opportunities, setOpportunities] = useState([])
   const [query, setQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState('All')
@@ -188,7 +194,7 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (isLandingPage || isLegalPage || !isKnownPath) {
+  if (isLandingPage || isLegalPage || isHelpPage || !isKnownPath) {
   setCheckingSession(false)
   return
 }
@@ -609,6 +615,38 @@ if (currentPath === '/cookies') {
   return <CookiePolicy />
 }
 
+if (isHelpPage) {
+  return (
+    <div
+      style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        background: '#fffdf8',
+      }}
+    >
+      <header style={{ padding: '20px 24px' }}>
+        <a
+          href="/"
+          style={{
+            color: '#359fa0',
+            fontWeight: 800,
+            textDecoration: 'none',
+          }}
+        >
+          ← Back to Opportune
+        </a>
+      </header>
+
+      <main style={{ flex: 1, width: '100%' }}>
+        <HelpSupport />
+      </main>
+
+      <SiteFooter />
+    </div>
+  )
+}
+
 if (!isKnownPath) {
   return <NotFound />
 }
@@ -715,13 +753,12 @@ if (currentPath === '/login') {
             openAddModal={openAddModal}
             setActiveNav={setActiveNav}
           />
-          <footer className="footer">
-            <span>Made with <Heart size={13} fill="currentColor" /> for your next big thing.</span>
-            <span>OPPORTUNE © {new Date().getFullYear()}</span>
-          </footer>
         </div>
       </div>
       )}
+
+      <SiteFooter />
+
       </main>
       <OpportunityModals
         showAddModal={showAddModal}

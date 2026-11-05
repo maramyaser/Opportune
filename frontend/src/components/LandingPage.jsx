@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 
 import '../LandingPage.css'
+import SiteFooter from './SiteFooter'
 
 export default function LandingPage({
   onSignIn,
@@ -199,17 +200,7 @@ export default function LandingPage({
           </button>
         </section>
       </main>
-
-      <footer className="landing-footer">
-  <span>© {new Date().getFullYear()} Opportune</span>
-
-  <nav className="landing-footer-links" aria-label="Legal information">
-    <a href="/privacy">Privacy Policy</a>
-    <a href="/cookies">Cookie Policy</a>
-  </nav>
-
-  <span>Made for your next big thing ✦</span>
-</footer>
+      <SiteFooter />
     </div>
   )
 }
