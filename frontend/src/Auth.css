@@ -758,3 +758,69 @@
     font-size: 14px;
   }
 }
+
+
+
+/* =========================================
+   FIX PRIVACY POLICY CONTENT ON MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .auth-privacy-dialog[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+
+    /* vh fallback for older mobile browsers */
+    height: 82vh;
+    height: 82dvh;
+    max-height: 82vh;
+    max-height: 82dvh;
+
+    min-height: 0;
+    overflow: hidden;
+    margin: auto;
+  }
+
+  /* Keep the title at the top */
+  .auth-privacy-header {
+    padding: 14px 18px;
+    min-height: 0;
+  }
+
+  .auth-privacy-header h2 {
+    font-size: 23px;
+    margin-top: 4px;
+  }
+
+  /* Give the policy its own scrollable space */
+  .auth-privacy-scroll {
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 18px;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .auth-privacy-scroll .legal-content {
+    height: auto;
+    min-height: 0;
+    padding: 0;
+  }
+
+  /* Keep the agreement visible at the bottom */
+  .auth-privacy-bottom {
+    min-height: 0;
+    padding: 12px 18px 16px;
+  }
+
+  .auth-privacy-actions {
+    margin-top: 12px;
+  }
+}
+
