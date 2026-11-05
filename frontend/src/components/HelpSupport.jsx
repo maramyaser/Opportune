@@ -2,6 +2,7 @@
 import { useState } from "react";
 import api from "../services/api";
 import "../HelpSupport.css";
+import { Send } from 'lucide-react'
 
 const tips = [
   {
@@ -325,7 +326,7 @@ export default function HelpSupport() {
             ) : (
               <>
                 Send message
-                <span aria-hidden="true"> ↗</span>
+                <Send size={16} strokeWidth={2.2} aria-hidden="true" />
               </>
             )}
           </button>
