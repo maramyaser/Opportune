@@ -159,7 +159,9 @@ export default function DashboardOverview({
             <span>Opportunities in your corner</span>
             <ArrowUpRight size={16} />
           </div>
-          <div className="stat-decoration">✳</div>
+          <div className="stat-decoration" aria-hidden="true">
+                   <Sparkles size={64} strokeWidth={1.5} />
+           </div>
         </article>
 
         <article className="stat-card stat-cream">
@@ -174,7 +176,9 @@ export default function DashboardOverview({
             <span>Time to take action!</span>
             <ArrowDownRight size={16} />
           </div>
-          <div className="stat-decoration">✦</div>
+          <div className="stat-decoration" aria-hidden="true">
+                  <Sparkles size={64} strokeWidth={1.5} />
+            </div>
         </article>
 
         <article className="stat-card stat-peach">
@@ -189,7 +193,9 @@ export default function DashboardOverview({
             <span>You're making moves</span>
             <ArrowUpRight size={16} />
           </div>
-          <div className="stat-decoration">✳</div>
+          <div className="stat-decoration" aria-hidden="true">
+               <Sparkles size={64} strokeWidth={1.5} />
+           </div>
         </article>
       </section>
     </>

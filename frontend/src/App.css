@@ -1967,3 +1967,14 @@ p {
     transform: rotate(360deg);
   }
 }
+
+/* Dashboard decorative icons */
+
+.stat-decoration svg {
+  display: block;
+  width: 64px;
+  height: 64px;
+  max-width: 100%;
+  color: currentColor;
+  opacity: 0.45;
+}
