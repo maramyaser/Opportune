@@ -468,10 +468,10 @@ export default function NotesPage() {
                 </label>
 
                 <p>
-                  Your reminder date will be saved.
-                  Email delivery will be enabled when
-                  the reminder service is connected.
-                </p>
+              Note reminders use your verified reminder email.
+              Make sure email reminders are enabled in the
+              sidebar before scheduling.
+               </p>
               </div>
             )}
           </div>

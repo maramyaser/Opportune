@@ -2,12 +2,14 @@
 from django.utils import timezone
 from rest_framework import serializers
 
+from reminders.models import EmailReminderPreference
 from .models import Note
 
 
 class NoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Note
+
         fields = [
             "id",
             "title",
@@ -57,15 +59,41 @@ class NoteSerializer(serializers.ModelSerializer):
         if "reminder_at" in attrs:
             reminder_at = attrs["reminder_at"]
 
-            if (
-                reminder_at is not None
-                and reminder_at <= timezone.now()
-            ):
-                raise serializers.ValidationError({
-                    "reminder_at": (
-                        "Choose a future date and time."
+            if reminder_at is not None:
+                if reminder_at <= timezone.now():
+                    raise serializers.ValidationError({
+                        "reminder_at": (
+                            "Choose a future date and time."
+                        )
+                    })
+
+                request = self.context.get("request")
+
+                if request is None or not request.user.is_authenticated:
+                    raise serializers.ValidationError({
+                        "reminder_at": (
+                            "Sign in to schedule reminders."
+                        )
+                    })
+
+                valid_preference = (
+                    EmailReminderPreference.objects.filter(
+                        user=request.user,
+                        email_verified=True,
+                        reminders_enabled=True,
                     )
-                })
+                    .exclude(reminder_email="")
+                    .exists()
+                )
+
+                if not valid_preference:
+                    raise serializers.ValidationError({
+                        "reminder_at": (
+                            "First link and verify your reminder "
+                            "email, then enable email reminders "
+                            "in the sidebar."
+                        )
+                    })
 
         return attrs
 

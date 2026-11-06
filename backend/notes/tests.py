@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from rest_framework.test import APIClient
+from reminders.models import EmailReminderPreference
 
 from .models import Note
 
@@ -87,6 +88,16 @@ class NoteAPITests(TestCase):
 
     def test_future_reminder_allowed(self):
         future = timezone.now() + timedelta(days=1)
+
+        EmailReminderPreference.objects.update_or_create(
+    user=self.user,
+    defaults={
+        "reminder_email": "test@example.com",
+        "email_verified": True,
+        "reminders_enabled": True,
+        "reminder_days": [7, 3, 1],
+    },
+)
 
         response = self.client.post(
             "/api/notes/",

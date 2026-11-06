@@ -4,6 +4,7 @@ import html
 from django.apps import apps
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.core.management import call_command
 from django.utils import timezone
 
 from reminders.models import (
@@ -273,6 +274,7 @@ class Command(BaseCommand):
                         )
                     )
 
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"Reminders complete. Sent: {sent}, "
@@ -281,6 +283,25 @@ class Command(BaseCommand):
                 f"Failed: {failed}."
             )
         )
+        # Process personal note reminders during the
+# existing scheduled reminder run.
+        note_reminder_error = None
+
+        try:
+                call_command(
+               "send_note_reminders",
+                dry_run=dry_run,
+                user_id=user_id,
+                stdout=self.stdout,
+                 stderr=self.stderr,
+            )
+        except CommandError as exc:
+              note_reminder_error = str(exc)
+
+        if note_reminder_error:
+             raise CommandError(
+        f"Note reminders failed: {note_reminder_error}"
+    )
 
         if failed:
             raise CommandError(
