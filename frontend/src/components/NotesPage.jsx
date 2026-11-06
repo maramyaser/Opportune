@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Bell,
@@ -30,23 +29,72 @@ const emptyForm = {
   content: '',
   link: '',
   wantsReminder: false,
-  reminderAt: '',
+  reminderDate: '',
+  reminderHour: '',
 }
 
-function localDateTime(value) {
-  if (!value) return ''
+// All hour windows are interpreted in the user's local browser timezone.
+const TIME_WINDOWS = Array.from({ length: 24 }, (_, hour) => ({
+  value: String(hour),
+  label: `${formatHour(hour)} – ${formatHour((hour + 1) % 24)}`,
+}))
 
+const PAST_TIME_MESSAGE =
+  'This reminder time has already passed.'
+
+function formatHour(hour) {
+  return `${hour % 12 || 12}:00 ${hour < 12 ? 'AM' : 'PM'}`
+}
+
+function localDateKey(value) {
   const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
 
-  if (Number.isNaN(date.getTime())) {
-    return ''
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function makeWindowStart(dateString, hourString) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return null
+  if (hourString === '' || !/^\d{1,2}$/.test(hourString)) return null
+
+  const [year, month, day] = dateString.split('-').map(Number)
+  const hour = Number(hourString)
+  if (hour < 0 || hour > 23) return null
+
+  const date = new Date(year, month - 1, day, hour, 0, 0, 0)
+
+  // Reject invalid dates, including dates normalized during DST changes.
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day ||
+    date.getHours() !== hour
+  ) {
+    return null
   }
 
-  const local = new Date(
-    date.getTime() - date.getTimezoneOffset() * 60000
-  )
+  return date
+}
 
-  return local.toISOString().slice(0, 16)
+function formatReminderWindow(value) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  // Old reminders with exact minutes keep their original display.
+  if (date.getMinutes() !== 0 || date.getSeconds() !== 0) {
+    return `Reminder date: ${formatDate(value)}`
+  }
+
+  const day = date.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+
+  return `Reminder window: ${day}, ${formatHour(date.getHours())} – ${formatHour((date.getHours() + 1) % 24)}`
 }
 
 function formatDate(value) {
@@ -90,6 +138,30 @@ export default function NotesPage() {
 
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [currentTime, setCurrentTime] = useState(() => Date.now())
+  const [originalReminderAt, setOriginalReminderAt] = useState(null)
+  const [reminderWindowChanged, setReminderWindowChanged] = useState(false)
+
+  // Update the warning while the form stays open.
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(Date.now()), 30000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  const selectedWindow = useMemo(
+    () => makeWindowStart(form.reminderDate, form.reminderHour),
+    [form.reminderDate, form.reminderHour]
+  )
+  // When editing an older exact-minute reminder, preserve its original
+  // time unless the user explicitly changes their date or time window.
+  const effectiveReminder =
+    originalReminderAt && !reminderWindowChanged
+      ? new Date(originalReminderAt)
+      : selectedWindow
+  const timeAlreadyPassed = Boolean(
+    form.wantsReminder && effectiveReminder &&
+    effectiveReminder.getTime() <= currentTime
+  )
 
   /* =========================================
      LOAD NOTES
@@ -129,6 +201,8 @@ export default function NotesPage() {
 
   const resetForm = () => {
     setForm({ ...emptyForm })
+    setOriginalReminderAt(null)
+    setReminderWindowChanged(false)
     setEditingId(null)
     setError('')
     setSuccess('')
@@ -141,14 +215,19 @@ export default function NotesPage() {
       new Date(note.reminder_at) > new Date()
 
     setEditingId(note.id)
+    setOriginalReminderAt(hasFutureReminder ? note.reminder_at : null)
+    setReminderWindowChanged(false)
 
     setForm({
       title: note.title || '',
       content: note.content || '',
       link: note.link || '',
       wantsReminder: Boolean(hasFutureReminder),
-      reminderAt: hasFutureReminder
-        ? localDateTime(note.reminder_at)
+      reminderDate: hasFutureReminder
+        ? localDateKey(note.reminder_at)
+        : '',
+      reminderHour: hasFutureReminder
+        ? String(new Date(note.reminder_at).getHours())
         : '',
     })
 
@@ -185,18 +264,23 @@ export default function NotesPage() {
     let reminderAt = null
 
     if (form.wantsReminder) {
-      if (!form.reminderAt) {
-        setError('Choose a reminder date and time.')
+      if (!form.reminderDate || form.reminderHour === '') {
+        setError('Choose a reminder date and hourly time window.')
         return
       }
 
-      const chosenDate = new Date(form.reminderAt)
+      const chosenDate = originalReminderAt && !reminderWindowChanged
+        ? new Date(originalReminderAt)
+        : makeWindowStart(form.reminderDate, form.reminderHour)
 
-      if (
-        Number.isNaN(chosenDate.getTime()) ||
-        chosenDate <= new Date()
-      ) {
-        setError('Please choose a future reminder date.')
+      if (!chosenDate) {
+        setError('Please choose a valid date and hourly time window.')
+        return
+      }
+
+      // Recheck at submission, even if the warning has not refreshed yet.
+      if (chosenDate <= new Date()) {
+        setError(PAST_TIME_MESSAGE)
         return
       }
 
@@ -232,6 +316,8 @@ export default function NotesPage() {
       }
 
       setForm({ ...emptyForm })
+      setOriginalReminderAt(null)
+      setReminderWindowChanged(false)
       setEditingId(null)
     } catch (err) {
       setError(errorMessage(err))
@@ -277,6 +363,8 @@ export default function NotesPage() {
       // Reset editor if the deleted note was being edited.
       if (editingId === noteId) {
         setForm({ ...emptyForm })
+        setOriginalReminderAt(null)
+        setReminderWindowChanged(false)
         setEditingId(null)
       }
 
@@ -435,12 +523,13 @@ export default function NotesPage() {
               <input
                 type="checkbox"
                 checked={form.wantsReminder}
-                onChange={(event) =>
-                  updateField(
-                    'wantsReminder',
-                    event.target.checked
-                  )
-                }
+                onChange={(event) => {
+                  updateField('wantsReminder', event.target.checked)
+                  if (!event.target.checked) {
+                    setOriginalReminderAt(null)
+                    setReminderWindowChanged(true)
+                  }
+                }}
                 disabled={saving}
               />
 
@@ -450,28 +539,62 @@ export default function NotesPage() {
 
             {form.wantsReminder && (
               <div className="notes-reminder-details">
-                <label>
-                  Reminder date and time
-                  <input
-                    type="datetime-local"
-                    value={form.reminderAt}
-                    min={localDateTime(new Date())}
-                    onChange={(event) =>
-                      updateField(
-                        'reminderAt',
-                        event.target.value
-                      )
-                    }
-                    disabled={saving}
-                    required
-                  />
-                </label>
+                <div className="notes-reminder-time-grid">
+                  <label>
+                    Reminder date
+                    <input
+                      type="date"
+                      value={form.reminderDate}
+                      onChange={(event) => {
+                        updateField('reminderDate', event.target.value)
+                        setReminderWindowChanged(true)
+                      }}
+                      disabled={saving}
+                      required
+                    />
+                  </label>
 
-                <p>
-              Note reminders use your verified reminder email.
-              Make sure email reminders are enabled in the
-              sidebar before scheduling.
-               </p>
+                  <label>
+                    Preferred time window
+                    <select
+                      value={form.reminderHour}
+                      onChange={(event) => {
+                        updateField('reminderHour', event.target.value)
+                        setReminderWindowChanged(true)
+                      }}
+                      disabled={saving}
+                      required
+                      aria-describedby="notes-reminder-window-help"
+                    >
+                      <option value="">Select a time window</option>
+                      {TIME_WINDOWS.map((windowOption) => (
+                        <option key={windowOption.value} value={windowOption.value}>
+                          {windowOption.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                {originalReminderAt && !reminderWindowChanged && (
+                  <p className="notes-existing-reminder-info">
+                    Existing reminder: {formatDate(originalReminderAt)}.
+                    Its exact time will be kept unless you change the date or window.
+                  </p>
+                )}
+
+                {timeAlreadyPassed && (
+                  <p className="notes-message notes-error" role="alert">
+                    {PAST_TIME_MESSAGE}
+                  </p>
+                )}
+
+                <p id="notes-reminder-window-help">
+                  Emails are scheduled from the beginning of your selected
+                  hour, in your device's local time. Delivery can take
+                  up to about 15 minutes or longer(within the selected time window).
+                  Make sure your reminder email is verified and enabled.
+                </p>
               </div>
             )}
           </div>
@@ -660,9 +783,7 @@ export default function NotesPage() {
                     <span>
                       {note.reminder_sent_at
                         ? 'Reminder sent'
-                        : `Reminder date: ${formatDate(
-                            note.reminder_at
-                          )}`}
+                        : formatReminderWindow(note.reminder_at)}
                     </span>
                   </div>
                 )}
