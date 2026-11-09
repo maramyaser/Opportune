@@ -277,13 +277,6 @@ export default function LandingPage({ onSignIn, onGetStarted }) {
 
             {demoError && <div className="landing-demo-error" role="alert"><BellRing size={18} /> <span>{demoError}</span></div>}
 
-            {extracting && (
-              <div className="landing-demo-progress" role="status" aria-live="polite">
-                <LoaderCircle size={18} className="landing-spin" />
-                Extracting opportunity details…
-              </div>
-            )}
-
             {preview && (
               <div className="landing-result" aria-live="polite">
                 <div className="landing-result-header">

@@ -1,11 +1,16 @@
 
 import logging
 import time
-
+from django.core.cache import caches
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from rest_framework.parsers import JSONParser
+from rest_framework.throttling import AnonRateThrottle
+from rest_framework.exceptions import Throttled
+from rest_framework.throttling import SimpleRateThrottle
 
 from .models import Opportunity
 from .serializers import OpportunitySerializer
@@ -177,3 +182,196 @@ class OpportunityExtractView(APIView):
                 },
                 status=status.HTTP_502_BAD_GATEWAY,
             )
+
+        
+
+# ========================================
+# PUBLIC LANDING PAGE AI PREVIEW
+# ========================================
+
+class PublicPreviewThrottle(AnonRateThrottle):
+    cache = caches["security"]
+    rate = "3/hour"
+    scope = "public_opportunity_preview"
+
+    def get_ident(self, request):
+        # Do not trust client-supplied forwarding headers.
+        return request.META.get("REMOTE_ADDR", "")
+
+class PublicPreviewGlobalThrottle(SimpleRateThrottle):
+    cache = caches["security"]
+    rate = "100/day"
+    scope = "public_opportunity_preview_global"
+
+    def get_cache_key(self, request, view):
+        return self.cache_format % {
+            "scope": self.scope,
+            "ident": "all_visitors",
+        }
+    
+class PublicOpportunityPreviewView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    parser_classes = [JSONParser]
+    throttle_classes = [
+    PublicPreviewThrottle,
+    PublicPreviewGlobalThrottle,
+]
+
+    def post(self, request):
+        # Keep the anonymous request small.
+        try:
+            content_length = int(
+                request.META.get("CONTENT_LENGTH") or 0
+            )
+        except (TypeError, ValueError):
+            return Response(
+                {"detail": "Invalid request size."},
+                status=400,
+            )
+
+        if content_length > 4096:
+            return Response(
+                {
+                    "detail": (
+                        "The request is too large."
+                    )
+                },
+                status=413,
+            )
+
+        if not isinstance(request.data, dict):
+            return Response(
+                {
+                    "detail": (
+                        "Send a JSON object containing "
+                        "an opportunity URL."
+                    )
+                },
+                status=400,
+            )
+
+        url = request.data.get("url", "")
+
+        if not isinstance(url, str):
+            return Response(
+                {
+                    "detail": (
+                        "The opportunity URL must be text."
+                    )
+                },
+                status=400,
+            )
+
+        url = url.strip()
+
+        if not url or len(url) > 2048:
+            return Response(
+                {
+                    "detail": (
+                        "Enter a valid opportunity URL."
+                    )
+                },
+                status=400,
+            )
+
+        try:
+            # Use the existing SSRF-protected page fetcher.
+            page = extract_page_text(url)
+
+            # Reuse the existing structured Gemini extractor.
+            result = extract_opportunity_details(
+                page_text=page["text"],
+                source_url=page["source_url"],
+            )
+
+            # Use the page title if Gemini omits it.
+            if not result.get("title"):
+                result["title"] = (
+                    page.get("page_title") or ""
+                )
+
+            # Only return fields needed in the public preview.
+            # Do not create an Opportunity database record.
+            return Response(
+                {
+                    "title": result.get("title", ""),
+                    "organization": result.get(
+                        "organization", ""
+                    ),
+                    "deadline": result.get("deadline"),
+                    "eligibility": result.get(
+                        "eligibility", ""
+                    ),
+                    "required_documents": result.get(
+                        "required_documents", []
+                    ),
+                    "source_url": page["source_url"],
+                    "requires_confirmation": True,
+                },
+                status=200,
+            )
+
+        except PageExtractionError as exc:
+            logger.info(
+                "Public preview page extraction rejected: %s",
+                type(exc).__name__,
+            )
+
+            return Response(
+                {
+                    "detail": str(exc),
+                    "code": "page_extraction_failed",
+                },
+                status=400,
+            )
+
+        except ValueError:
+            logger.warning(
+                "Public preview returned invalid data."
+            )
+
+            return Response(
+                {
+                    "detail": (
+                        "We couldn't extract the details "
+                        "from this page. Please try "
+                        "another public opportunity link."
+                    ),
+                    "code": "invalid_extraction",
+                },
+                status=422,
+            )
+
+        except RuntimeError:
+            logger.warning(
+                "Public preview AI service unavailable."
+            )
+
+            return Response(
+                {
+                    "detail": (
+                        "Our AI preview is temporarily "
+                        "unavailable. Please try again later."
+                    ),
+                    "code": "ai_extraction_failed",
+                },
+                status=503,
+            )
+
+        except Exception:
+            logger.exception(
+                "Unexpected public preview failure."
+            )
+
+            return Response(
+                {
+                    "detail": (
+                        "Something went wrong while "
+                        "processing this opportunity."
+                    ),
+                    "code": "preview_unavailable",
+                },
+                status=503,
+            )
+

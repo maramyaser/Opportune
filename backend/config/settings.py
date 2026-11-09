@@ -374,3 +374,21 @@ FRONTEND_URL = os.getenv(
     "FRONTEND_URL",
     "http://localhost:5173",
 ).rstrip("/")
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "opportunities.views": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
